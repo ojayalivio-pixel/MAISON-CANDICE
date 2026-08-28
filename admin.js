@@ -80,6 +80,7 @@ function injectAdminHTML(){
 
   <div class="admin-tabs">
     <button class="admin-tab active" data-tab="edit">EDIT</button>
+    <button class="admin-tab" data-tab="stats">STATS</button>
     <button class="admin-tab" data-tab="geo">COUNTRIES</button>
     <button class="admin-tab" data-tab="settings">SETTINGS</button>
   </div>
@@ -101,6 +102,16 @@ function injectAdminHTML(){
       <div class="admin-label">Reset</div>
       <button class="admin-action-btn danger" id="btnResetText">↺&nbsp;&nbsp;Restore original text</button>
       <button class="admin-action-btn danger" id="btnResetMedia" style="margin-top:8px">↺&nbsp;&nbsp;Remove all uploaded media</button>
+    </div>
+
+    <div class="admin-section" data-section="stats">
+      <div class="admin-tip">Distinct admirers per day — counted once per visitor per day. Your own backstage visits are never counted.</div>
+      <div class="stats-grid">
+        <div class="stat-box"><b id="statToday">—</b><span>Today</span></div>
+        <div class="stat-box"><b id="statWeek">—</b><span>Last 7 days</span></div>
+        <div class="stat-box"><b id="statAll">—</b><span>All time</span></div>
+      </div>
+      <div class="admin-tip" id="statsErr" style="display:none;color:var(--crimson-hot)">Couldn't load stats — backend unreachable.</div>
     </div>
 
     <div class="admin-section" data-section="geo">
@@ -494,6 +505,21 @@ function logoutAdmin(){
 function switchTab(name){
   document.querySelectorAll('.admin-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.toggle('active', s.dataset.section===name));
+  if(name==='stats') loadStats();
+}
+async function loadStats(){
+  const err = document.getElementById('statsErr');
+  err.style.display='none';
+  try{
+    const r = await fetch(location.origin+'/api/visits/stats',{headers:{'X-Admin-Pass':getPass()}});
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    document.getElementById('statToday').textContent = d.today;
+    document.getElementById('statWeek').textContent = d.week;
+    document.getElementById('statAll').textContent = d.all_time;
+  }catch(e){
+    err.style.display='block';
+  }
 }
 async function changePassword(){
   const v = document.getElementById('newPass').value.trim();
@@ -592,7 +618,7 @@ async function exportSite(){
     // keep data-media and data-mid so imported file rewires media
   });
   const body = clone.querySelector('body');
-  if(body) body.className = 'locked';
+  if(body) body.className = '';
 
   // Fetch admin.css + admin.js and inline them
   let adminCss='', adminJs='';

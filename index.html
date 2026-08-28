@@ -1176,7 +1176,7 @@ footer{
 <link rel="stylesheet" href="admin.css">
 </head>
 
-<body class="locked">
+<body>
 
 <!-- ============ SIGNATURE VEIL ============ -->
 <div class="veil" id="veil" aria-hidden="true">
@@ -1186,21 +1186,6 @@ footer{
 </div>
 <script>setTimeout(function(){var v=document.getElementById('veil');if(v)v.remove();},2600);</script>
 
-
-<!-- ============ AGE GATE ============ -->
-<div class="age-gate" id="ageGate" role="dialog" aria-modal="true" aria-labelledby="ageTitle">
-  <div class="age-card">
-    <div class="age-eyebrow">DISCRETION · PRIVACY · CONSENT</div>
-    <h2 id="ageTitle" class="serif">You must be 18+ <br>to enter.</h2>
-    <p>This is a private, adult-oriented digital experience featuring suggestive content and personal messaging.
-       By entering, you confirm you are of legal age in your jurisdiction and consent to viewing mature material.</p>
-    <div class="age-btns">
-      <button class="age-btn enter" onclick="enterSite()">I&nbsp;AM&nbsp;18+ · ENTER</button>
-      <a class="age-btn leave" href="https://www.google.com">TAKE ME BACK</a>
-    </div>
-    <div class="age-fine">By continuing you agree to be discreet, respectful, and to abide by the terms of every platform linked here.</div>
-  </div>
-</div>
 
 <!-- ============ NAV ============ -->
 <nav class="main-nav" id="mainNav">
@@ -1260,7 +1245,7 @@ footer{
     <div class="hero-social" data-testid="hero-social-strip">
       <span class="hs-note">One tap</span>
       <a class="hs-btn" data-testid="hero-onlyfans-btn" href="https://onlyfans.com/candiceferragamo" target="_blank" rel="noopener noreferrer" style="--brand-color:#00AFF0"><span class="dot"></span>OnlyFans</a>
-      <a class="hs-btn" data-testid="hero-telegram-btn" href="https://t.me/candiceferragamo" target="_blank" rel="noopener noreferrer" style="--brand-color:#2AABEE"><span class="dot"></span>Telegram</a>
+      <a class="hs-btn" data-testid="hero-telegram-btn" href="https://t.me/privatemaisoncandice" target="_blank" rel="noopener noreferrer" style="--brand-color:#2AABEE"><span class="dot"></span>Telegram</a>
       <a class="hs-btn" data-testid="hero-whatsapp-btn" href="https://wa.me/message/46V4TW2E5ASNF1" target="_blank" rel="noopener noreferrer" style="--brand-color:#25D366"><span class="dot"></span>WhatsApp</a>
       <a class="hs-btn" data-testid="hero-snapchat-btn" href="https://snapchat.com/t/OkSSAxsc" target="_blank" rel="noopener noreferrer" style="--brand-color:#FFFC00"><span class="dot"></span>Snapchat</a>
     </div>
@@ -1555,13 +1540,13 @@ footer{
       </a>
 
       <!-- TELEGRAM -->
-      <a class="contact-btn" data-testid="contact-telegram-btn" href="https://t.me/candiceferragamo" target="_blank" rel="noopener noreferrer" style="--brand-color:#2AABEE">
+      <a class="contact-btn" data-testid="contact-telegram-btn" href="https://t.me/privatemaisoncandice" target="_blank" rel="noopener noreferrer" style="--brand-color:#2AABEE">
         <span class="contact-icon">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="m22 3-3 17-6-5-3 3v-5l11-9-13 8-4-1z"/></svg>
         </span>
         <div>
           <span class="contact-label">Telegram</span>
-          <span class="contact-handle">@candiceferragamo</span>
+          <span class="contact-handle">@privatemaisoncandice</span>
         </div>
         <span class="contact-status on">Open</span>
       </a>
@@ -1573,7 +1558,7 @@ footer{
 <!-- ============ GIFTS / PAYMENTS ============ -->
 <section id="payments">
   <div class="wrap reveal">
-    <div class="section-eyebrow">Gifts &amp; Support</div>
+    <div class="section-eyebrow">Gifts &amp; Private Arrangements</div>
     <h2 class="serif">Spoil me <span class="it">a little.</span></h2>
     <p class="lead">Thoughtful gestures are never expected — but they are always noticed, and they never go unrewarded.</p>
 
@@ -1740,16 +1725,13 @@ footer{
 </footer>
 
 <script>
-/* ============ AGE GATE ============ */
-function enterSite(){
-  try{localStorage.setItem('candice_age_ok','1')}catch(e){}
-  document.body.classList.remove('locked');
-}
-(function initAge(){
+/* ============ VISIT PING ============ */
+(function(){
   try{
-    if(localStorage.getItem('candice_age_ok')==='1'){
-      document.body.classList.remove('locked');
-    }
+    if(sessionStorage.getItem('candice_admin_session')==='1') return;
+    var vid = localStorage.getItem('candice_vid');
+    if(!vid){ vid = 'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,10); localStorage.setItem('candice_vid', vid); }
+    fetch(location.origin+'/api/visits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vid:vid})}).catch(function(){});
   }catch(e){}
 })();
 

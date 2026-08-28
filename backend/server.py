@@ -3,7 +3,7 @@ import logging
 import os
 import shutil
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
@@ -98,6 +98,34 @@ class InitBody(BaseModel):
 class CompleteBody(BaseModel):
     upload_id: str
     total_chunks: int
+
+
+class VisitBody(BaseModel):
+    vid: str
+
+
+@api.post("/visits")
+async def record_visit(body: VisitBody):
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    await db.visits.update_one(
+        {"vid": body.vid[:64], "date": today},
+        {"$setOnInsert": {"ts": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    return {"ok": True}
+
+
+@api.get("/visits/stats")
+async def visit_stats(x_admin_pass: str = Header(None)):
+    await check_pass(x_admin_pass)
+    now = datetime.now(timezone.utc)
+    today = now.strftime("%Y-%m-%d")
+    week = [(now - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(7)]
+    return {
+        "today": await db.visits.count_documents({"date": today}),
+        "week": await db.visits.count_documents({"date": {"$in": week}}),
+        "all_time": await db.visits.count_documents({}),
+    }
 
 
 @api.post("/admin/password")
