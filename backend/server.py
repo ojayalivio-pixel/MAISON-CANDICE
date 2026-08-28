@@ -2,13 +2,17 @@ import json
 import logging
 import os
 import shutil
+import time
 import uuid
+from collections import defaultdict, deque
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import bcrypt
+import jwt
 import requests
 from dotenv import load_dotenv
-from fastapi import APIRouter, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -76,14 +80,72 @@ class PasswordBody(BaseModel):
     new: str
 
 
-async def get_admin_pass() -> str:
-    doc = await db.settings.find_one({"key": "admin_pass"})
-    return doc["value"] if doc else ADMIN_UPLOAD_PASS
+class LoginBody(BaseModel):
+    password: str
 
 
-async def check_pass(x_admin_pass: str):
-    if x_admin_pass != await get_admin_pass():
-        raise HTTPException(status_code=401, detail="Wrong upload password")
+JWT_SECRET = os.environ["JWT_SECRET"]
+JWT_ALG = "HS256"
+TOKEN_TTL_HOURS = 12
+LOGIN_MAX = 5
+LOGIN_WINDOW_MIN = 15
+
+_rl_buckets = defaultdict(deque)
+
+
+def _client_ip(request: Request) -> str:
+    xff = request.headers.get("x-forwarded-for", "")
+    return xff.split(",")[0].strip() if xff else (request.client.host if request.client else "unknown")
+
+
+def _rate_limit(request: Request, key: str, limit: int, window_s: int):
+    now = time.time()
+    dq = _rl_buckets[key + ":" + _client_ip(request)]
+    while dq and dq[0] < now - window_s:
+        dq.popleft()
+    if len(dq) >= limit:
+        raise HTTPException(status_code=429, detail="Too many requests. Please slow down.")
+    dq.append(now)
+
+
+def _hash_pw(p: str) -> str:
+    return bcrypt.hashpw(p.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def _verify_pw(p: str, h: str) -> bool:
+    try:
+        return bcrypt.checkpw(p.encode("utf-8"), h.encode("utf-8"))
+    except Exception:
+        return False
+
+
+def _make_token() -> str:
+    payload = {
+        "role": "admin",
+        "type": "access",
+        "exp": datetime.now(timezone.utc) + timedelta(hours=TOKEN_TTL_HOURS),
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALG)
+
+
+async def get_admin_hash():
+    doc = await db.settings.find_one({"key": "admin_pass_hash"})
+    return doc["value"] if doc else None
+
+
+async def require_admin(authorization: str = Header(None)):
+    token = authorization[7:] if authorization and authorization.startswith("Bearer ") else ""
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALG])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Session expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    if payload.get("role") != "admin":
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return True
 
 
 app = FastAPI()
@@ -115,7 +177,8 @@ class BookingStatusBody(BaseModel):
 
 
 @api.post("/bookings")
-async def create_booking(body: BookingBody):
+async def create_booking(body: BookingBody, request: Request):
+    _rate_limit(request, "booking", 5, 3600)
     if not body.name.strip() or not body.handle.strip() or not body.message.strip():
         raise HTTPException(status_code=400, detail="Missing required fields")
     doc = {
@@ -135,16 +198,14 @@ async def create_booking(body: BookingBody):
 
 
 @api.get("/bookings")
-async def list_bookings(x_admin_pass: str = Header(None)):
-    await check_pass(x_admin_pass)
+async def list_bookings(_: bool = Depends(require_admin)):
     items = await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
     new_count = await db.bookings.count_documents({"status": "new"})
     return {"items": items, "new_count": new_count}
 
 
 @api.post("/bookings/{booking_id}/status")
-async def update_booking(booking_id: str, body: BookingStatusBody, x_admin_pass: str = Header(None)):
-    await check_pass(x_admin_pass)
+async def update_booking(booking_id: str, body: BookingStatusBody, _: bool = Depends(require_admin)):
     if body.status not in ("new", "handled"):
         raise HTTPException(status_code=400, detail="Invalid status")
     r = await db.bookings.update_one({"id": booking_id}, {"$set": {"status": body.status}})
@@ -154,8 +215,7 @@ async def update_booking(booking_id: str, body: BookingStatusBody, x_admin_pass:
 
 
 @api.delete("/bookings/{booking_id}")
-async def delete_booking(booking_id: str, x_admin_pass: str = Header(None)):
-    await check_pass(x_admin_pass)
+async def delete_booking(booking_id: str, _: bool = Depends(require_admin)):
     r = await db.bookings.delete_one({"id": booking_id})
     if r.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Not found")
@@ -180,8 +240,7 @@ async def record_visit(body: VisitBody):
 
 
 @api.get("/visits/stats")
-async def visit_stats(x_admin_pass: str = Header(None)):
-    await check_pass(x_admin_pass)
+async def visit_stats(_: bool = Depends(require_admin)):
     now = datetime.now(timezone.utc)
     today = now.strftime("%Y-%m-%d")
     week = [(now - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(7)]
@@ -199,14 +258,30 @@ async def visit_stats(x_admin_pass: str = Header(None)):
     }
 
 
+@api.post("/admin/login")
+async def admin_login(body: LoginBody, request: Request):
+    ip = _client_ip(request)
+    since = (datetime.now(timezone.utc) - timedelta(minutes=LOGIN_WINDOW_MIN)).isoformat()
+    fails = await db.login_attempts.count_documents({"ip": ip, "ts": {"$gte": since}})
+    if fails >= LOGIN_MAX:
+        raise HTTPException(status_code=429, detail="Too many attempts. Try again in 15 minutes.")
+    h = await get_admin_hash()
+    if not h or not _verify_pw(body.password, h):
+        await db.login_attempts.insert_one({"ip": ip, "ts": datetime.now(timezone.utc).isoformat()})
+        raise HTTPException(status_code=401, detail="Wrong password")
+    await db.login_attempts.delete_many({"ip": ip})
+    return {"token": _make_token(), "expires_in": TOKEN_TTL_HOURS * 3600}
+
+
 @api.post("/admin/password")
-async def change_password(body: PasswordBody):
-    if body.current != await get_admin_pass():
+async def change_password(body: PasswordBody, _: bool = Depends(require_admin)):
+    h = await get_admin_hash()
+    if not h or not _verify_pw(body.current, h):
         raise HTTPException(status_code=401, detail="Wrong current password")
     if len(body.new.strip()) < 4:
         raise HTTPException(status_code=400, detail="Password too short")
     await db.settings.update_one(
-        {"key": "admin_pass"}, {"$set": {"value": body.new.strip()}}, upsert=True
+        {"key": "admin_pass_hash"}, {"$set": {"value": _hash_pw(body.new.strip())}}, upsert=True
     )
     return {"ok": True}
 
@@ -222,8 +297,7 @@ async def get_blocked_countries():
 
 
 @api.post("/blocked-countries")
-async def set_blocked_countries(body: BlockedBody, x_admin_pass: str = Header(None)):
-    await check_pass(x_admin_pass)
+async def set_blocked_countries(body: BlockedBody, _: bool = Depends(require_admin)):
     codes = sorted({c.strip().upper()[:2] for c in body.countries if c and c.strip()})[:300]
     await db.settings.update_one(
         {"key": "blocked_countries"}, {"$set": {"value": codes}}, upsert=True
@@ -251,8 +325,7 @@ async def geo(request: Request):
 
 
 @api.post("/media/upload/init")
-async def upload_init(body: InitBody, x_admin_pass: str = Header(None)):
-    await check_pass(x_admin_pass)
+async def upload_init(body: InitBody, _: bool = Depends(require_admin)):
     upload_id = str(uuid.uuid4())
     d = TMP_DIR / upload_id
     d.mkdir(parents=True, exist_ok=True)
@@ -263,9 +336,8 @@ async def upload_init(body: InitBody, x_admin_pass: str = Header(None)):
 @api.post("/media/upload/chunk")
 async def upload_chunk(
     upload_id: str = Form(...), index: int = Form(...), chunk: UploadFile = File(...),
-    x_admin_pass: str = Header(None),
+    _: bool = Depends(require_admin),
 ):
-    await check_pass(x_admin_pass)
     d = TMP_DIR / upload_id
     if not d.exists():
         raise HTTPException(status_code=404, detail="Unknown upload")
@@ -275,8 +347,7 @@ async def upload_chunk(
 
 
 @api.post("/media/upload/complete")
-async def upload_complete(body: CompleteBody, x_admin_pass: str = Header(None)):
-    await check_pass(x_admin_pass)
+async def upload_complete(body: CompleteBody, _: bool = Depends(require_admin)):
     d = TMP_DIR / body.upload_id
     if not d.exists():
         raise HTTPException(status_code=404, detail="Unknown upload")
@@ -359,6 +430,20 @@ async def startup():
         logger.info("Object storage initialized")
     except Exception as e:
         logger.error(f"Storage init failed: {e}")
+    # Seed the admin password HASH (migrate from old plaintext or env) — never store plaintext.
+    try:
+        existing = await db.settings.find_one({"key": "admin_pass_hash"})
+        if not existing:
+            old = await db.settings.find_one({"key": "admin_pass"})
+            seed = old["value"] if old else ADMIN_UPLOAD_PASS
+            await db.settings.update_one(
+                {"key": "admin_pass_hash"}, {"$set": {"value": _hash_pw(seed)}}, upsert=True
+            )
+            if old:
+                await db.settings.delete_one({"key": "admin_pass"})
+        await db.login_attempts.create_index("ip")
+    except Exception as e:
+        logger.error(f"Admin seed failed: {e}")
 
 
 @app.on_event("shutdown")

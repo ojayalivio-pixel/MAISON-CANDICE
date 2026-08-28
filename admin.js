@@ -9,7 +9,7 @@
 (function(){
 
 const LS = {
-  pass:'candice_admin_pass',
+  token:'candice_admin_token',
   session:'candice_admin_session',
   content:'candice_content',
   media:'candice_media',
@@ -405,7 +405,7 @@ function setMediaTab(name){
 /* ---------- Cloud upload (chunked, bypasses proxy limits) ---------- */
 async function uploadToCloud(file, onProgress){
   const API = location.origin;
-  const headers = {'X-Admin-Pass': getPass()};
+  const headers = {'Authorization': 'Bearer '+getToken()};
   const initR = await fetch(API+'/api/media/upload/init',{
     method:'POST',
     headers:Object.assign({'Content-Type':'application/json'}, headers),
@@ -479,8 +479,9 @@ function removeMediaFromPicker(){
 /* =========================================================
    ADMIN LOGIN
    ========================================================= */
-function getPass(){try{return localStorage.getItem(LS.pass)||'candice2026'}catch(e){return 'candice2026'}}
-function isLoggedIn(){try{return sessionStorage.getItem(LS.session)==='1'}catch(e){return false}}
+function getToken(){try{return sessionStorage.getItem(LS.token)||'';}catch(e){return '';}}
+function authHeaders(extra){return Object.assign({'Authorization':'Bearer '+getToken()}, extra||{});}
+function isLoggedIn(){return !!getToken();}
 function openAdminLogin(){
   if(isLoggedIn()){openAdmin();return;}
   const modal = document.getElementById('adminLogin');
@@ -492,14 +493,24 @@ function closeAdminLogin(){
   document.getElementById('adminPassInput').value='';
   document.getElementById('adminErr').textContent='';
 }
-function submitAdminLogin(){
+async function submitAdminLogin(){
   const v = document.getElementById('adminPassInput').value;
-  if(v === getPass()){
-    try{sessionStorage.setItem(LS.session,'1')}catch(e){}
+  const errEl = document.getElementById('adminErr');
+  errEl.textContent = 'Checking…';
+  try{
+    const r = await fetch(location.origin+'/api/admin/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:v})
+    });
+    if(r.status===429){ errEl.textContent = 'Too many attempts. Wait 15 minutes.'; return; }
+    if(!r.ok){ errEl.textContent = 'Wrong password.'; return; }
+    const d = await r.json();
+    try{sessionStorage.setItem(LS.token, d.token);}catch(e){}
     closeAdminLogin();
     openAdmin();
-  } else {
-    document.getElementById('adminErr').textContent = 'Wrong password.';
+  }catch(e){
+    errEl.textContent = 'Server unreachable. Try again.';
   }
 }
 function openAdmin(){
@@ -513,7 +524,7 @@ function closeAdmin(){
   if(editMode) toggleEditMode();
 }
 function logoutAdmin(){
-  try{sessionStorage.removeItem(LS.session)}catch(e){}
+  try{sessionStorage.removeItem(LS.token);}catch(e){}
   closeAdmin();
   showToast('Logged out');
 }
@@ -530,7 +541,7 @@ async function loadRequests(){
   const cnt = document.getElementById('reqCount');
   err.style.display='none';
   try{
-    const r = await fetch(location.origin+'/api/bookings',{headers:{'X-Admin-Pass':getPass()}});
+    const r = await fetch(location.origin+'/api/bookings',{headers:authHeaders()});
     if(!r.ok) throw new Error();
     const d = await r.json();
     cnt.textContent = d.items.length ? (d.new_count+' new · '+d.items.length+' total') : 'No requests yet';
@@ -553,9 +564,9 @@ async function loadRequests(){
         try{
           if(act==='del'){
             if(!confirm('Delete this request?')) return;
-            await fetch(location.origin+'/api/bookings/'+id,{method:'DELETE',headers:{'X-Admin-Pass':getPass()}});
+            await fetch(location.origin+'/api/bookings/'+id,{method:'DELETE',headers:authHeaders()});
           } else {
-            await fetch(location.origin+'/api/bookings/'+id+'/status',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Pass':getPass()},body:JSON.stringify({status:'handled'})});
+            await fetch(location.origin+'/api/bookings/'+id+'/status',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({status:'handled'})});
           }
           loadRequests();
         }catch(e){showToast('Action failed')}
@@ -573,7 +584,7 @@ async function loadStats(){
   const err = document.getElementById('statsErr');
   err.style.display='none';
   try{
-    const r = await fetch(location.origin+'/api/visits/stats',{headers:{'X-Admin-Pass':getPass()}});
+    const r = await fetch(location.origin+'/api/visits/stats',{headers:authHeaders()});
     if(r.status===401){
       err.textContent = "Couldn't load stats — password doesn't match the server. Re-set it in Settings.";
       err.style.display='block';
@@ -644,7 +655,7 @@ async function toggleBlocked(code){
   try{
     const r = await fetch(location.origin+'/api/blocked-countries',{
       method:'POST',
-      headers:{'Content-Type':'application/json','X-Admin-Pass':getPass()},
+      headers:authHeaders({'Content-Type':'application/json'}),
       body:JSON.stringify({countries:b})
     });
     if(r.status===401){ showToast('Not saved — password out of sync'); return; }
