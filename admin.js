@@ -91,7 +91,7 @@ function injectAdminHTML(){
       <div class="admin-label">Editable text</div>
       <div class="admin-tip">Headings, paragraphs, captions, contact handles, payment details, travel dates, tags.</div>
       <div class="admin-label">Editable media</div>
-      <div class="admin-tip">Gallery tiles (photos) and the featured video slot. Upload from your device or paste a URL.</div>
+      <div class="admin-tip">Gallery tiles (photos) and the featured video slot. Uploads are stored in the cloud and visible to every visitor — or paste any URL.</div>
       <div class="admin-label">Reset</div>
       <button class="admin-action-btn danger" id="btnResetText">↺&nbsp;&nbsp;Restore original text</button>
       <button class="admin-action-btn danger" id="btnResetMedia" style="margin-top:8px">↺&nbsp;&nbsp;Remove all uploaded media</button>
@@ -313,8 +313,8 @@ function openMediaPicker(el){
   document.getElementById('mediaPickerTitle').textContent = isVideo ? 'Change video' : 'Change photo';
   document.getElementById('mediaFile').accept = isVideo ? 'video/*' : 'image/*';
   document.getElementById('mediaDropHint').textContent = isVideo
-    ? 'MP4 · WEBM up to ~4 MB (browser storage limit)'
-    : 'JPG · PNG · WEBP · GIF up to ~4 MB';
+    ? 'MP4 · WEBM up to 200 MB — stored in the cloud'
+    : 'JPG · PNG · WEBP · GIF up to 15 MB — stored in the cloud';
   document.getElementById('mediaUrl').value = '';
   document.getElementById('mediaFile').value = '';
   setMediaTab('upload');
@@ -330,13 +330,37 @@ function setMediaTab(name){
   document.getElementById('mediaTabUpload').style.display = name==='upload' ? 'block' : 'none';
   document.getElementById('mediaTabUrl').style.display = name==='url' ? 'block' : 'none';
 }
-function fileToDataUrl(file){
-  return new Promise((res,rej)=>{
-    const r = new FileReader();
-    r.onload = ()=>res(r.result);
-    r.onerror = rej;
-    r.readAsDataURL(file);
+/* ---------- Cloud upload (chunked, bypasses proxy limits) ---------- */
+async function uploadToCloud(file, onProgress){
+  const API = location.origin;
+  const headers = {'X-Admin-Pass': getPass()};
+  const initR = await fetch(API+'/api/media/upload/init',{
+    method:'POST',
+    headers:Object.assign({'Content-Type':'application/json'}, headers),
+    body:JSON.stringify({filename:file.name, content_type:file.type||'application/octet-stream'})
   });
+  if(initR.status===401) throw new Error('Wrong upload password');
+  if(!initR.ok) throw new Error('Upload init failed');
+  const {upload_id} = await initR.json();
+  const CHUNK = 1024*1024;
+  const total = Math.max(1, Math.ceil(file.size/CHUNK));
+  for(let i=0;i<total;i++){
+    const fd = new FormData();
+    fd.append('upload_id', upload_id);
+    fd.append('index', i);
+    fd.append('chunk', file.slice(i*CHUNK,(i+1)*CHUNK));
+    const r = await fetch(API+'/api/media/upload/chunk',{method:'POST',headers,body:fd});
+    if(!r.ok) throw new Error('Upload interrupted');
+    if(onProgress) onProgress(Math.round(((i+1)/total)*100));
+  }
+  const doneR = await fetch(API+'/api/media/upload/complete',{
+    method:'POST',
+    headers:Object.assign({'Content-Type':'application/json'}, headers),
+    body:JSON.stringify({upload_id, total_chunks: total})
+  });
+  if(!doneR.ok) throw new Error('Upload finalize failed');
+  const d = await doneR.json();
+  return API + d.url;
 }
 async function saveMediaFromPicker(){
   if(!currentMediaTarget) return;
@@ -345,8 +369,22 @@ async function saveMediaFromPicker(){
   if(currentMediaTab==='upload'){
     const f = document.getElementById('mediaFile').files[0];
     if(!f){ showToast('Pick a file first'); return; }
-    if(f.size > 4.5 * 1024 * 1024){ showToast('File too large (>4 MB)'); return; }
-    try{ src = await fileToDataUrl(f); }catch(e){ showToast('Read failed'); return; }
+    const isVideo = currentMediaTarget.dataset.media==='video';
+    const limitMB = isVideo ? 200 : 15;
+    if(f.size > limitMB * 1024 * 1024){ showToast('File too large (>'+limitMB+' MB)'); return; }
+    const hint = document.getElementById('mediaDropHint');
+    const saveBtn = document.getElementById('btnMediaSave');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'UPLOADING…';
+    try{
+      src = await uploadToCloud(f, p=>{ hint.textContent = 'Uploading to cloud… '+p+'%'; });
+    }catch(e){
+      showToast(e.message||'Upload failed');
+      saveBtn.disabled = false; saveBtn.textContent = 'SAVE';
+      hint.textContent = 'Upload failed — try again';
+      return;
+    }
+    saveBtn.disabled = false; saveBtn.textContent = 'SAVE';
   } else {
     src = document.getElementById('mediaUrl').value.trim();
     if(!src){ showToast('Paste a URL'); return; }
