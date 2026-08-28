@@ -244,12 +244,13 @@ nav.main-nav.scrolled{
 .navlinks{
   display:flex;
   align-items:center;
-  gap:26px;
+  gap:14px;
   font-size:10px;
   letter-spacing:.24em;
   font-weight:500;
   color:#c8bfb2;
 }
+.nav-dot{color:var(--champagne);opacity:.55;font-size:12px;user-select:none}
 .navlinks a{
   position:relative;
   padding:6px 0;
@@ -1207,6 +1208,26 @@ footer{
   border-color:var(--champagne);
   background-color:var(--panel-2);
 }
+/* mode toggle */
+.bf-toggle{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line-warm);background:var(--panel)}
+.bf-mode{
+  padding:14px 10px;
+  background:transparent;
+  border:none;
+  color:var(--dim);
+  font-family:'Jost',sans-serif;
+  font-size:10.5px;
+  font-weight:500;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background-color .3s var(--ease),color .3s var(--ease);
+}
+.bf-mode.active{
+  background:var(--champagne);
+  color:#1c1206;
+  font-weight:600;
+}
 .booking-form .btn{margin-top:26px}
 .bf-err{
   margin-top:22px;
@@ -1268,12 +1289,13 @@ footer{
     CANDICE&nbsp;FERRAGAMO
   </a>
   <div class="navlinks">
-    <a href="#candice">ABOUT</a>
-    <a href="#experiences">EXPERIENCES</a>
-    <a href="#gallery">GALLERY</a>
-    <a href="#travel">TRAVEL</a>
-    <a href="#booking">BOOK</a>
-    <a href="#faq">FAQ</a>
+    <a href="#candice">ABOUT</a><span class="nav-dot">·</span>
+    <a href="#experiences">EXPERIENCES</a><span class="nav-dot">·</span>
+    <a href="#gallery">GALLERY</a><span class="nav-dot">·</span>
+    <a href="#travel">TRAVEL</a><span class="nav-dot">·</span>
+    <a href="#booking">BOOK</a><span class="nav-dot">·</span>
+    <a href="#payments">PAY</a><span class="nav-dot">·</span>
+    <a href="#faq">FAQ</a><span class="nav-dot">·</span>
     <a href="#contact" class="nav-cta">CONNECT</a>
   </div>
 </nav>
@@ -1659,7 +1681,14 @@ footer{
             <option>A Tailored Encounter</option>
           </select>
         </div>
-        <div class="bf-field wide">
+        <div class="bf-field">
+          <label>Virtual or in person *</label>
+          <div class="bf-toggle" data-testid="booking-mode-toggle">
+            <button type="button" class="bf-mode active" data-mode="Virtual" data-testid="booking-mode-virtual">Virtual</button>
+            <button type="button" class="bf-mode" data-mode="In Person" data-testid="booking-mode-inperson">In Person</button>
+          </div>
+        </div>
+        <div class="bf-field">
           <label for="bfWhen">Preferred date &amp; time (your timezone)</label>
           <input type="text" id="bfWhen" maxlength="200" placeholder="e.g. 14 July, evening — GMT+8" data-testid="booking-when-input">
         </div>
@@ -1868,6 +1897,13 @@ footer{
 (function(){
   const bf = document.getElementById('bookingForm');
   if(!bf) return;
+  let bookingMode = 'Virtual';
+  bf.querySelectorAll('.bf-mode').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      bookingMode = b.dataset.mode;
+      bf.querySelectorAll('.bf-mode').forEach(x=>x.classList.toggle('active', x===b));
+    });
+  });
   bf.addEventListener('submit', async function(e){
     e.preventDefault();
     const err = document.getElementById('bookingErr');
@@ -1887,6 +1923,7 @@ footer{
           channel:document.getElementById('bfChannel').value,
           handle:handle,
           session_type:document.getElementById('bfType').value,
+          mode:bookingMode,
           preferred:document.getElementById('bfWhen').value.trim(),
           message:msg
         })

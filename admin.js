@@ -531,7 +531,7 @@ async function loadRequests(){
       const when = new Date(b.created_at).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
       return '<div class="req-card '+(b.status==='new'?'unread':'')+'" data-id="'+b.id+'">'
         + '<div class="req-top"><span class="req-name">'+esc(b.name)+'</span><span class="req-time">'+when+'</span></div>'
-        + '<div class="req-meta">'+esc(b.session_type)+' · '+esc(b.channel)+' → <b>'+esc(b.handle)+'</b></div>'
+        + '<div class="req-meta">'+esc(b.session_type)+(b.mode?' · '+esc(b.mode):'')+' · '+esc(b.channel)+' → <b>'+esc(b.handle)+'</b></div>'
         + (b.preferred?'<div class="req-meta">Prefers: '+esc(b.preferred)+'</div>':'')
         + '<div class="req-msg">'+esc(b.message)+'</div>'
         + '<div class="req-actions">'

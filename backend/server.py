@@ -105,6 +105,7 @@ class BookingBody(BaseModel):
     channel: str
     handle: str
     session_type: str
+    mode: str = ""
     preferred: str = ""
     message: str = ""
 
@@ -123,6 +124,7 @@ async def create_booking(body: BookingBody):
         "channel": body.channel.strip()[:40],
         "handle": body.handle.strip()[:120],
         "session_type": body.session_type.strip()[:60],
+        "mode": body.mode.strip()[:20],
         "preferred": body.preferred.strip()[:200],
         "message": body.message.strip()[:1500],
         "status": "new",
