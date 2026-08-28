@@ -32,6 +32,8 @@ State: localStorage keys `candice_admin_pass`, `candice_content`, `candice_media
 - P2: None pending — awaiting user feedback
 
 ## Change log
+- 2026-06: "Send Tribute" shiny gold button added to Findom card → anchors to #payments (screenshot verified)
+- 2026-06: Password change now syncs to backend (POST /api/admin/password, stored in Mongo settings; check_pass reads DB first, env fallback). curl verified: change → old pass 401, new pass 200, wrong current 401. Default remains candice2026 until user changes it in Settings
 - 2026-06: Cloud media storage added — FastAPI backend (/app/backend/server.py) with chunked upload (init/chunk/complete) → Emergent Object Storage, served via /api/media/file/{id}. Admin uploads (photos 15MB, videos 200MB) now cloud-backed, X-Admin-Pass header auth (env ADMIN_UPLOAD_PASS=candice2026). Tested: iteration_2.json 6/6 PASS
 - 2026-06: About section rewritten classy/elegant ("Grace, poise & quiet power."), removed "maldita" line; tags updated (Elegant, Commanding)
 - 2026-06: Added experience cards: 07 BDSM & Domination, 08 Findom, 09 Slave Training

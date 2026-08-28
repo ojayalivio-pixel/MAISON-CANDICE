@@ -71,8 +71,18 @@ def get_object(path: str) -> tuple:
     return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
 
 
-def check_pass(x_admin_pass: str):
-    if x_admin_pass != ADMIN_UPLOAD_PASS:
+class PasswordBody(BaseModel):
+    current: str
+    new: str
+
+
+async def get_admin_pass() -> str:
+    doc = await db.settings.find_one({"key": "admin_pass"})
+    return doc["value"] if doc else ADMIN_UPLOAD_PASS
+
+
+async def check_pass(x_admin_pass: str):
+    if x_admin_pass != await get_admin_pass():
         raise HTTPException(status_code=401, detail="Wrong upload password")
 
 
@@ -90,9 +100,21 @@ class CompleteBody(BaseModel):
     total_chunks: int
 
 
+@api.post("/admin/password")
+async def change_password(body: PasswordBody):
+    if body.current != await get_admin_pass():
+        raise HTTPException(status_code=401, detail="Wrong current password")
+    if len(body.new.strip()) < 4:
+        raise HTTPException(status_code=400, detail="Password too short")
+    await db.settings.update_one(
+        {"key": "admin_pass"}, {"$set": {"value": body.new.strip()}}, upsert=True
+    )
+    return {"ok": True}
+
+
 @api.post("/media/upload/init")
 async def upload_init(body: InitBody, x_admin_pass: str = Header(None)):
-    check_pass(x_admin_pass)
+    await check_pass(x_admin_pass)
     upload_id = str(uuid.uuid4())
     d = TMP_DIR / upload_id
     d.mkdir(parents=True, exist_ok=True)
@@ -105,7 +127,7 @@ async def upload_chunk(
     upload_id: str = Form(...), index: int = Form(...), chunk: UploadFile = File(...),
     x_admin_pass: str = Header(None),
 ):
-    check_pass(x_admin_pass)
+    await check_pass(x_admin_pass)
     d = TMP_DIR / upload_id
     if not d.exists():
         raise HTTPException(status_code=404, detail="Unknown upload")
@@ -116,7 +138,7 @@ async def upload_chunk(
 
 @api.post("/media/upload/complete")
 async def upload_complete(body: CompleteBody, x_admin_pass: str = Header(None)):
-    check_pass(x_admin_pass)
+    await check_pass(x_admin_pass)
     d = TMP_DIR / body.upload_id
     if not d.exists():
         raise HTTPException(status_code=404, detail="Unknown upload")

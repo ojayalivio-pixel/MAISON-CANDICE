@@ -448,12 +448,25 @@ function switchTab(name){
   document.querySelectorAll('.admin-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.toggle('active', s.dataset.section===name));
 }
-function changePassword(){
+async function changePassword(){
   const v = document.getElementById('newPass').value.trim();
   if(v.length<4){showToast('Too short');return;}
-  try{localStorage.setItem(LS.pass, v)}catch(e){}
-  document.getElementById('newPass').value='';
-  showToast('Password updated');
+  try{
+    const r = await fetch(location.origin+'/api/admin/password',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({current:getPass(), new:v})
+    });
+    if(r.status===401){showToast('Backend rejected current password');return;}
+    if(!r.ok){showToast('Server error — try again');return;}
+    try{localStorage.setItem(LS.pass, v)}catch(e){}
+    document.getElementById('newPass').value='';
+    showToast('Password updated everywhere');
+  }catch(e){
+    try{localStorage.setItem(LS.pass, v)}catch(err){}
+    document.getElementById('newPass').value='';
+    showToast('Saved locally (backend offline)');
+  }
 }
 
 /* =========================================================
