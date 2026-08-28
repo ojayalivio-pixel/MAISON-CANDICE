@@ -293,9 +293,9 @@ nav.main-nav.scrolled{
 .navlinks a:hover::after{transform:scaleX(1)}
 .nav-cta{
   padding:9px 16px;
-  border:1px solid var(--crimson);
+  border:1px solid transparent;
   color:var(--silk) !important;
-  background:linear-gradient(90deg,rgba(225,29,72,.12),rgba(225,29,72,0));
+  background:transparent;
   font-size:9px;
   letter-spacing:.24em;
   font-weight:600;
@@ -1315,7 +1315,7 @@ footer{
     <a href="#candice">ABOUT</a><span class="nav-dot">·</span>
     <a href="#experiences">EXPERIENCES</a><span class="nav-dot">·</span>
     <a href="#gallery">GALLERY</a><span class="nav-dot">·</span>
-    <a href="#travel">TRAVEL</a><span class="nav-dot">·</span>
+    <span data-restrict><a href="#travel">TRAVEL</a><span class="nav-dot">·</span></span>
     <a href="#booking">BOOK</a><span class="nav-dot">·</span>
     <a href="#payments">PAY</a><span class="nav-dot">·</span>
     <a href="#faq">FAQ</a><span class="nav-dot">·</span>
@@ -1420,7 +1420,7 @@ footer{
         <h3>Private Sessions</h3>
         <p>Exclusive, undivided attention. Just you, me, and whatever we decide to get up to.</p>
       </div>
-      <div class="card">
+      <div class="card" data-restrict>
         <span class="card-num">03 / Intimate</span>
         <h3>Virtual Dates &amp; In Person</h3>
         <p>Wine, low light, slow conversation. Real connection online — or face to face, arranged with care and discretion.</p>
@@ -1501,8 +1501,8 @@ footer{
 </section>
 
 <!-- ============ TRAVEL ============ -->
-<section id="travel">
-  <div class="wrap two reveal">
+<section id="travel" data-restrict="section">
+  <div class="wrap two reveal restrict-hide">
     <div>
       <div class="section-eyebrow">Currently based in</div>
       <div class="location">
@@ -1538,6 +1538,14 @@ footer{
       <a class="btn primary" href="#contact" style="margin-top:32px">
         <span>Meet me somewhere</span><span class="arrow">→</span>
       </a>
+    </div>
+  </div>
+
+  <div class="wrap restrict-msg" data-testid="travel-restricted-msg">
+    <div class="privacy-panel">
+      <div class="section-eyebrow">Private</div>
+      <h2 class="serif">Kept <span class="it">private</span> in your region.</h2>
+      <p class="lead">For privacy and discretion, my location, availability and travel plans aren't shown here. Everything else on the site remains open to you.</p>
     </div>
   </div>
 </section>
@@ -1706,7 +1714,7 @@ footer{
             <option>A Tailored Encounter</option>
           </select>
         </div>
-        <div class="bf-field">
+        <div class="bf-field" data-restrict>
           <label>Virtual or in person *</label>
           <div class="bf-toggle" data-testid="booking-mode-toggle">
             <button type="button" class="bf-mode active" data-mode="Virtual" data-testid="booking-mode-virtual">Virtual</button>

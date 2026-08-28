@@ -59,6 +59,10 @@ function injectAdminHTML(){
   </div>
 </div>
 
+<div class="geo-blur-banner" id="geoBlurBanner" data-testid="geo-blur-banner">
+  <span class="gbb-dot"></span>Some details are kept private in your region
+</div>
+
 <div class="admin-login" id="adminLogin" role="dialog" aria-modal="true">
   <div class="admin-login-card">
     <h3>Backstage.</h3>
@@ -659,10 +663,20 @@ async function enforceGeoBlock(){
       const name = (COUNTRIES.find(c=>c[0]===code)||[])[1] || code;
       const cEl = document.getElementById('geoCountry');
       if(cEl) cEl.textContent = name;
-      document.body.classList.add('geo-blocked');
+      restrictSensitive();
     }
   }catch(e){}
 }
+
+/* Apply country privacy: hide escort / in-person tells, remove in-person options */
+function restrictSensitive(){
+  document.body.classList.add('geo-blur');
+  document.querySelectorAll('select option').forEach(opt=>{
+    if(/in person/i.test(opt.textContent)) opt.remove();
+  });
+}
+window.enforceGeoBlock = enforceGeoBlock;
+window.restrictSensitive = restrictSensitive;
 
 /* =========================================================
    EXPORT (bakes edits + media + blocklist + password into ONE file)
