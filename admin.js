@@ -13,6 +13,7 @@ const LS = {
   session:'candice_admin_session',
   content:'candice_content',
   media:'candice_media',
+  links:'candice_links',
   blocked:'candice_blocked_countries'
 };
 
@@ -39,6 +40,9 @@ const MEDIA_SLOTS = [
   {sel:'.gallery-grid .tile', kind:'image'},
   {sel:'.video-frame', kind:'video'}
 ];
+
+/* ---------- Editable link selectors ---------- */
+const LINK_SELECTORS = ['.pay-btn','.contact-btn','.hero-social .hs-btn'];
 
 /* =========================================================
    INJECT ADMIN HTML INTO DOM
@@ -92,6 +96,8 @@ function injectAdminHTML(){
       <div class="admin-tip">Headings, paragraphs, captions, contact handles, payment details, travel dates, tags.</div>
       <div class="admin-label">Editable media</div>
       <div class="admin-tip">Gallery tiles (photos) and the featured video slot. Uploads are stored in the cloud and visible to every visitor — or paste any URL.</div>
+      <div class="admin-label">Editable links</div>
+      <div class="admin-tip">With edit mode ON, click any contact, social or payment button to change where it points (OnlyFans, Telegram, Wise, PayPal…).</div>
       <div class="admin-label">Reset</div>
       <button class="admin-action-btn danger" id="btnResetText">↺&nbsp;&nbsp;Restore original text</button>
       <button class="admin-action-btn danger" id="btnResetMedia" style="margin-top:8px">↺&nbsp;&nbsp;Remove all uploaded media</button>
@@ -167,6 +173,47 @@ function tagEditable(){
     });
   });
 }
+let linkIdCounter = 0;
+function tagLinks(){
+  LINK_SELECTORS.forEach(sel=>{
+    document.querySelectorAll(sel).forEach(el=>{
+      if(!el.dataset.link) el.dataset.link = 'l'+(++linkIdCounter);
+    });
+  });
+}
+function loadLinks(){
+  try{
+    const raw = localStorage.getItem(LS.links);
+    if(raw){
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach(id=>{
+        const el = document.querySelector('[data-link="'+id+'"]');
+        if(el) el.setAttribute('href', data[id]);
+      });
+    }
+  }catch(e){}
+}
+function saveLink(el, url){
+  el.setAttribute('href', url);
+  try{
+    const data = JSON.parse(localStorage.getItem(LS.links)||'{}');
+    data[el.dataset.link] = url;
+    localStorage.setItem(LS.links, JSON.stringify(data));
+    showToast('Link updated');
+  }catch(e){showToast('Storage full')}
+}
+function handleLinkEditClick(e){
+  if(!editMode) return;
+  const link = e.target.closest('[data-link]');
+  if(!link) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if(e.target.closest('[data-edit]')) return; // let text editing happen
+  const current = link.getAttribute('href') || '';
+  const url = prompt('Link URL for this button:', current);
+  if(url && url.trim()) saveLink(link, url.trim());
+}
+
 let mediaIdCounter = 0;
 function tagMedia(){
   MEDIA_SLOTS.forEach(({sel,kind})=>{
@@ -256,7 +303,7 @@ function clearMedia(mid){
 
 function resetContent(){
   if(!confirm('Restore all text to the original? Your edits will be lost.')) return;
-  try{localStorage.removeItem(LS.content)}catch(e){}
+  try{localStorage.removeItem(LS.content);localStorage.removeItem(LS.links)}catch(e){}
   location.reload();
 }
 function resetMedia(){
@@ -570,11 +617,12 @@ async function exportSite(){
   const stateBoot = `
 <script>
 (function(){try{
-  var K={pass:'candice_admin_pass',content:'candice_content',media:'candice_media',blocked:'candice_blocked_countries'};
+  var K={pass:'candice_admin_pass',content:'candice_content',media:'candice_media',links:'candice_links',blocked:'candice_blocked_countries'};
   if(!localStorage.getItem(K.blocked)) localStorage.setItem(K.blocked, ${JSON.stringify(localStorage.getItem(LS.blocked)||'[]')});
   if(!localStorage.getItem(K.pass))    localStorage.setItem(K.pass,    ${JSON.stringify(getPass())});
   if(!localStorage.getItem(K.content)) localStorage.setItem(K.content, ${JSON.stringify(localStorage.getItem(LS.content)||'{}')});
   if(!localStorage.getItem(K.media))   localStorage.setItem(K.media,   ${JSON.stringify(localStorage.getItem(LS.media)||'{}')});
+  if(!localStorage.getItem(K.links))   localStorage.setItem(K.links,   ${JSON.stringify(localStorage.getItem(LS.links)||'{}')});
 }catch(e){}})();
 <\/script>`;
 
@@ -638,9 +686,12 @@ function init(){
   bindHandlers();
   tagEditable();
   tagMedia();
+  tagLinks();
   loadContent();
   loadMedia();
+  loadLinks();
   enforceGeoBlock();
+  document.addEventListener('click', handleLinkEditClick, true);
 
   // Keyboard trigger
   document.addEventListener('keydown',e=>{

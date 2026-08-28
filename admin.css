@@ -462,3 +462,7 @@ body.edit-mode [data-media] .media-edit-btn{display:inline-flex}
 @media(max-width:900px){
   .admin-panel{width:100%}
 }
+
+/* editable link affordance */
+body.edit-mode [data-link]{outline:1px dashed rgba(200,169,97,.6);outline-offset:3px;cursor:pointer}
+body.edit-mode [data-link]:hover{outline-color:var(--crimson-hot)}

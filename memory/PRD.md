@@ -32,6 +32,7 @@ State: localStorage keys `candice_admin_pass`, `candice_content`, `candice_media
 - P2: None pending — awaiting user feedback
 
 ## Change log
+- 2026-06: Three features (iteration_3.json 10/10 PASS): (1) Signature loading veil — red silk curtain + gold C monogram, splits at 1.35s, removed at 2.6s; (2) Social buttons — hero social strip (OnlyFans/Telegram/WhatsApp/Snapchat pills, data-testids hero-*-btn) + OnlyFans & activated Telegram contact cards (PLACEHOLDER handles: candiceferragamo); (3) Editable link hrefs — edit mode click on .pay-btn/.contact-btn/.hs-btn prompts for URL, stored in localStorage candice_links, applied via loadLinks(), included in export boot
 - 2026-06: Typography swapped to old-money pairing — Cormorant Garamond (serif display) + Jost (Futura-style sans) across index.html and admin.css; pink accent (--rose #f4c7d4) changed to red (#ff4d5e). Screenshot verified
 - 2026-06: "Send Tribute" shiny gold button added to Findom card → anchors to #payments (screenshot verified)
 - 2026-06: Password change now syncs to backend (POST /api/admin/password, stored in Mongo settings; check_pass reads DB first, env fallback). curl verified: change → old pass 401, new pass 200, wrong current 401. Default remains candice2026 until user changes it in Settings
