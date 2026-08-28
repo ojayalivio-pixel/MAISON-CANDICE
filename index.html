@@ -46,8 +46,8 @@ setTimeout(function(){
 
 <!-- FONTS -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&family=Jost:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&amp;family=Jost:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300;1,400&amp;display=swap" rel="stylesheet">
 
 <style>
 /* =================================================================
@@ -1303,22 +1303,537 @@ footer{
 }
 
 </style>
-<link rel="stylesheet" href="admin.css">
-</head>
 
-<body>
+<style>/* =========================================================
+   CANDICE — BACKSTAGE ADMIN STYLES
+   All admin/editing/geo-block UI lives here. Loaded only
+   when admin.js injects its HTML into the page.
+   ========================================================= */
+
+/* ============ COUNTRY BLOCK SCREEN ============ */
+.geo-block{
+  position:fixed;
+  inset:0;
+  z-index:400;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:radial-gradient(circle at 50% 40%,#160b10 0%,#050307 70%);
+}
+body.geo-blocked .geo-block{display:flex}
+body.geo-blocked > *:not(.geo-block){display:none !important}
+
+/* ---------- Geo PRIVACY: BLUR only escort / in-person tells in blocked regions ---------- */
+/* Sensitive bits (in-person card, booking toggle, travel location/dates/availability/meet button) */
+/* are blurred but still visible; all non-explicit content stays fully readable.                 */
+body.geo-blur [data-restrict]{
+  display:none !important;
+}
+
+body.geo-blur .geo-blur-banner{display:flex}
+.geo-blur-banner{
+  display:none;position:fixed;left:0;right:0;bottom:0;z-index:500;
+  align-items:center;justify-content:center;gap:10px;
+  padding:13px 18px;
+  background:rgba(10,5,7,.94);backdrop-filter:blur(12px);
+  border-top:1px solid rgba(200,169,97,.3);
+  font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--champagne-soft);
+}
+.geo-blur-banner .gbb-dot{width:6px;height:6px;border-radius:50%;background:var(--crimson-hot,#ff2d5f);box-shadow:0 0 10px var(--crimson-hot,#ff2d5f)}
+.geo-card{
+  max-width:520px;
+  padding:56px 44px;
+  text-align:center;
+  border:1px solid var(--line-warm);
+  background:linear-gradient(180deg,rgba(30,15,20,.9),rgba(15,10,14,.95));
+}
+.geo-card h2{
+  margin:0 0 20px;
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:40px;
+  line-height:1;
+  font-weight:300;
+  color:var(--silk);
+}
+.geo-card p{color:var(--muted);font-size:14px;line-height:1.7}
+.geo-card .country{
+  display:inline-block;
+  margin-top:20px;
+  padding:8px 14px;
+  border:1px solid var(--line-warm);
+  color:var(--champagne);
+  font-size:11px;
+  letter-spacing:.22em;
+}
+
+/* ============ ADMIN LOGIN & PANEL ============ */
+.admin-login{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(5,3,7,.85);
+  backdrop-filter:blur(10px);
+}
+.admin-login.show{display:flex;animation:fadeIn .3s var(--ease)}
+.admin-login-card{
+  max-width:400px;
+  width:100%;
+  padding:40px 36px;
+  border:1px solid var(--crimson);
+  background:linear-gradient(160deg,#1a0e13,#08060a);
+  box-shadow:0 40px 100px rgba(225,29,72,.2);
+}
+.admin-login-card h3{
+  margin:0 0 8px;
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:26px;
+  color:var(--silk);
+  font-weight:300;
+}
+.admin-login-card p{margin:0 0 20px;color:var(--muted);font-size:12px}
+.admin-input{
+  width:100%;
+  padding:14px 16px;
+  background:var(--ink);
+  border:1px solid var(--line-warm);
+  color:var(--silk);
+  font-family:'Jost',sans-serif;
+  font-size:14px;
+  letter-spacing:.06em;
+  outline:none;
+  transition:.25s;
+}
+.admin-input:focus{border-color:var(--crimson)}
+.admin-row{display:flex;gap:10px;margin-top:14px}
+.admin-btn{
+  flex:1;
+  padding:13px 18px;
+  background:var(--crimson);
+  color:#fff;
+  border:none;
+  font-family:'Jost',sans-serif;
+  font-size:10px;
+  letter-spacing:.24em;
+  font-weight:600;
+  cursor:pointer;
+  transition:.25s;
+}
+.admin-btn:hover{background:var(--crimson-hot)}
+.admin-btn.ghost{background:transparent;border:1px solid var(--line-warm);color:var(--muted)}
+.admin-btn.ghost:hover{border-color:var(--champagne);color:var(--champagne)}
+.admin-err{
+  margin-top:10px;
+  color:var(--crimson-hot);
+  font-size:11px;
+  min-height:14px;
+  letter-spacing:.02em;
+}
+
+.admin-panel{
+  position:fixed;
+  top:0;right:0;bottom:0;
+  width:min(420px,92%);
+  z-index:450;
+  display:none;
+  flex-direction:column;
+  background:linear-gradient(180deg,#120a0d,#080608);
+  border-left:1px solid var(--line-warm);
+  box-shadow:-30px 0 80px rgba(0,0,0,.6);
+  transform:translateX(100%);
+  transition:transform .35s var(--ease);
+}
+.admin-panel.show{display:flex;transform:translateX(0)}
+.admin-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:22px 24px;
+  border-bottom:1px solid var(--line-warm);
+  background:rgba(225,29,72,.06);
+}
+.admin-head h4{
+  margin:0;
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:20px;
+  color:var(--silk);
+  font-weight:300;
+}
+.admin-close{
+  background:transparent;
+  border:1px solid var(--line-warm);
+  width:32px;height:32px;
+  color:var(--muted);
+  cursor:pointer;
+  font-size:18px;
+  transition:.25s;
+}
+.admin-close:hover{color:var(--crimson);border-color:var(--crimson)}
+.admin-tabs{
+  display:flex;
+  border-bottom:1px solid var(--line-warm);
+}
+.admin-tab{
+  flex:1;
+  padding:14px 8px;
+  background:transparent;
+  border:none;
+  border-bottom:2px solid transparent;
+  color:var(--muted);
+  font-family:'Jost',sans-serif;
+  font-size:10px;
+  letter-spacing:.2em;
+  font-weight:600;
+  cursor:pointer;
+  transition:.25s;
+  text-transform:uppercase;
+}
+.admin-tab.active{color:var(--silk);border-bottom-color:var(--crimson)}
+.admin-tab:hover{color:var(--silk)}
+.admin-body{
+  flex:1;
+  overflow-y:auto;
+  padding:22px 24px;
+}
+.admin-body::-webkit-scrollbar{width:6px}
+.admin-body::-webkit-scrollbar-thumb{background:var(--line-warm)}
+.admin-section{display:none}
+.admin-section.active{display:block}
+.admin-label{
+  display:block;
+  color:var(--champagne);
+  font-size:10px;
+  letter-spacing:.24em;
+  text-transform:uppercase;
+  font-weight:600;
+  margin:16px 0 8px;
+}
+.admin-tip{
+  padding:12px 14px;
+  background:var(--panel-2);
+  border:1px solid var(--line);
+  border-left:2px solid var(--champagne);
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+  margin-bottom:16px;
+}
+.admin-tip.warn{border-left-color:var(--crimson);color:var(--rose)}
+.edit-status{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 16px;
+  background:var(--panel);
+  border:1px solid var(--line-warm);
+  margin-bottom:16px;
+  cursor:pointer;
+}
+.edit-status .sw{
+  position:relative;
+  width:40px;height:22px;
+  background:var(--line-warm);
+  border-radius:11px;
+  transition:.25s;
+  flex:0 0 40px;
+}
+.edit-status .sw::after{
+  content:"";
+  position:absolute;
+  top:3px;left:3px;
+  width:16px;height:16px;
+  border-radius:50%;
+  background:var(--silk);
+  transition:.25s var(--ease);
+}
+.edit-status.on .sw{background:var(--crimson)}
+.edit-status.on .sw::after{left:21px}
+.edit-status span{flex:1;color:var(--silk);font-size:13px;font-weight:500}
+.edit-status small{color:var(--muted);font-size:10px;letter-spacing:.14em}
+
+/* text editable outline */
+body.edit-mode [data-edit]{
+  outline:1px dashed rgba(225,29,72,.5);
+  outline-offset:4px;
+  cursor:text;
+  transition:outline-color .2s;
+}
+body.edit-mode [data-edit]:hover{outline-color:var(--crimson-hot)}
+body.edit-mode [data-edit]:focus{
+  outline:2px solid var(--crimson);
+  outline-offset:6px;
+  background:rgba(225,29,72,.05);
+}
+
+/* media slots */
+body.edit-mode [data-media]{
+  outline:2px dashed rgba(200,169,97,.55);
+  outline-offset:6px;
+  position:relative;
+}
+body.edit-mode [data-media]:hover{outline-color:var(--champagne)}
+.media-edit-btn{
+  position:absolute;
+  top:10px;right:10px;
+  z-index:5;
+  display:none;
+  align-items:center;
+  gap:6px;
+  padding:8px 12px;
+  background:rgba(8,6,10,.92);
+  border:1px solid var(--champagne);
+  color:var(--champagne);
+  font-family:'Jost',sans-serif;
+  font-size:10px;
+  letter-spacing:.18em;
+  font-weight:600;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:.2s;
+}
+.media-edit-btn:hover{background:var(--champagne);color:#100a0c}
+body.edit-mode [data-media] .media-edit-btn{display:inline-flex}
+
+/* media picker */
+.media-picker{
+  position:fixed;
+  inset:0;
+  z-index:520;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(5,3,7,.86);
+  backdrop-filter:blur(10px);
+}
+.media-picker.show{display:flex;animation:fadeIn .25s var(--ease)}
+.media-picker-card{
+  max-width:520px;
+  width:100%;
+  padding:36px 32px;
+  border:1px solid var(--champagne);
+  background:linear-gradient(160deg,#161016,#08060a);
+  box-shadow:0 40px 100px rgba(200,169,97,.1);
+}
+.media-picker-card h3{
+  margin:0 0 6px;
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:26px;
+  color:var(--silk);
+  font-weight:300;
+}
+.media-picker-card p{margin:0 0 22px;color:var(--muted);font-size:12px}
+.media-tabs{
+  display:flex;
+  gap:0;
+  margin-bottom:16px;
+  border-bottom:1px solid var(--line-warm);
+}
+.media-tab{
+  flex:1;
+  padding:12px;
+  background:transparent;
+  border:none;
+  border-bottom:2px solid transparent;
+  color:var(--muted);
+  font-family:'Jost',sans-serif;
+  font-size:10px;
+  letter-spacing:.22em;
+  font-weight:600;
+  cursor:pointer;
+  text-transform:uppercase;
+  transition:.25s;
+}
+.media-tab.active{color:var(--silk);border-bottom-color:var(--champagne)}
+.media-drop{
+  padding:32px 20px;
+  border:1px dashed var(--line-warm);
+  background:var(--ink);
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
+  cursor:pointer;
+  transition:.25s;
+}
+.media-drop:hover{border-color:var(--champagne);color:var(--champagne)}
+.media-drop.dragover{border-color:var(--crimson);background:rgba(225,29,72,.06);color:var(--rose)}
+.media-drop input{display:none}
+.media-drop .big{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:22px;
+  color:var(--silk);
+  display:block;
+  margin-bottom:8px;
+}
+
+/* country blocker */
+.country-search{
+  width:100%;
+  padding:12px 14px;
+  background:var(--ink);
+  border:1px solid var(--line-warm);
+  color:var(--silk);
+  font-family:'Jost',sans-serif;
+  font-size:13px;
+  outline:none;
+  margin-bottom:12px;
+}
+.country-search:focus{border-color:var(--champagne)}
+.country-list{
+  max-height:340px;
+  overflow-y:auto;
+  border:1px solid var(--line);
+  background:var(--ink);
+}
+.country-list::-webkit-scrollbar{width:6px}
+.country-list::-webkit-scrollbar-thumb{background:var(--line-warm)}
+.country-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 14px;
+  border-bottom:1px solid var(--line);
+  color:var(--silk);
+  font-size:13px;
+  cursor:pointer;
+  transition:.15s;
+}
+.country-row:hover{background:var(--panel)}
+.country-row.blocked{background:rgba(225,29,72,.08);color:var(--rose)}
+.country-row .code{color:var(--dim);font-size:10px;letter-spacing:.15em}
+.blocked-count{
+  padding:10px 14px;
+  background:var(--panel-3);
+  border:1px solid var(--line-warm);
+  color:var(--champagne);
+  font-size:11px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  font-weight:600;
+  margin-bottom:12px;
+}
+.admin-actions{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:16px 24px;
+  border-top:1px solid var(--line-warm);
+  background:rgba(8,6,10,.6);
+}
+.admin-action-btn{
+  padding:12px 16px;
+  background:var(--panel-2);
+  border:1px solid var(--line-warm);
+  color:var(--silk);
+  font-family:'Jost',sans-serif;
+  font-size:10px;
+  letter-spacing:.22em;
+  font-weight:600;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:.25s;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.admin-action-btn:hover{border-color:var(--champagne);color:var(--champagne)}
+.admin-action-btn.primary{
+  background:var(--crimson);
+  border-color:var(--crimson);
+  color:#fff;
+}
+.admin-action-btn.primary:hover{background:var(--crimson-hot);color:#fff}
+.admin-action-btn.danger:hover{border-color:var(--crimson);color:var(--crimson)}
+.admin-toast{
+  position:fixed;
+  bottom:24px;left:24px;
+  z-index:600;
+  padding:14px 20px;
+  background:var(--crimson);
+  color:#fff;
+  font-size:12px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  font-weight:600;
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(200%);
+  transition:transform .35s var(--ease), opacity .35s var(--ease), visibility .35s var(--ease);
+  box-shadow:0 20px 60px rgba(225,29,72,.4);
+}
+.admin-toast.show{transform:translateY(0);opacity:1;visibility:visible}
+
+/* rendered media inside gallery tiles / video frame */
+[data-media] .injected-media{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:1;
+}
+[data-media] .injected-media + *{position:relative;z-index:2}
+[data-media].has-media::before{opacity:0 !important}
+
+@media(max-width:900px){
+  .admin-panel{width:100%}
+}
+
+/* editable link affordance */
+body.edit-mode [data-link]{outline:1px dashed rgba(200,169,97,.6);outline-offset:3px;cursor:pointer}
+body.edit-mode [data-link]:hover{outline-color:var(--crimson-hot)}
+
+/* stats */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.stat-box{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:16px 10px;text-align:center}
+.stat-box b{display:block;font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:var(--champagne);line-height:1}
+.stat-box span{display:block;margin-top:7px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+
+/* country stats */
+.country-stats{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.cstat-row{display:grid;grid-template-columns:1fr 90px 30px;align-items:center;gap:10px}
+.cstat-name{font-size:11px;color:var(--text);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cstat-bar{height:5px;background:var(--panel-3);border-radius:99px;overflow:hidden}
+.cstat-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--crimson),var(--champagne));border-radius:99px}
+.cstat-n{font-size:11px;color:var(--champagne-soft);text-align:right;font-weight:500}
+
+/* booking requests */
+.req-list{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.req-card{padding:16px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px}
+.req-card.unread{border-color:rgba(225,29,72,.55);box-shadow:0 0 18px -8px var(--crimson-glow)}
+.req-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.req-name{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--silk)}
+.req-time{font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+.req-meta{margin-top:6px;font-size:11px;color:var(--champagne-soft);letter-spacing:.03em}
+.req-meta b{color:var(--champagne)}
+.req-msg{margin-top:10px;font-size:12px;line-height:1.7;color:var(--muted);white-space:pre-wrap;word-break:break-word}
+.req-actions{display:flex;gap:8px;margin-top:12px;align-items:center}
+.req-btn{padding:7px 13px;border-radius:99px;border:1px solid var(--line-warm);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;transition:.25s}
+.req-btn.done:hover{border-color:var(--champagne);color:var(--champagne)}
+.req-btn.del:hover{border-color:var(--crimson);color:var(--crimson-hot)}
+.req-handled{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+</style></head>
+
+<body style="--mx: 82.0408163265306%; --my: 93.92185238784371%;" class="">
 
 <!-- ============ SIGNATURE VEIL ============ -->
-<div class="veil" id="veil" aria-hidden="true">
-  <div class="veil-panel left"></div>
-  <div class="veil-panel right"></div>
-  <div class="veil-mark"><span class="serif">C</span><em>Maison Candice</em></div>
-</div>
+
 <script>setTimeout(function(){var v=document.getElementById('veil');if(v)v.remove();},2600);</script>
 
 
 <!-- ============ NAV ============ -->
-<nav class="main-nav" id="mainNav">
+<nav class="main-nav scrolled" id="mainNav">
   <a class="brand" href="#home">
     <span class="brand-dot"></span>
     CANDICE&nbsp;FERRAGAMO
@@ -1376,18 +1891,18 @@ footer{
 
     <div class="hero-social" data-testid="hero-social-strip">
       <span class="hs-note">One tap</span>
-      <a class="hs-btn" data-testid="hero-telegram-btn" href="https://t.me/privatemaisoncandice" target="_blank" rel="noopener noreferrer" style="--brand-color:#2AABEE"><span class="dot"></span>Telegram</a>
-      <a class="hs-btn" data-testid="hero-whatsapp-btn" href="https://wa.me/message/46V4TW2E5ASNF1" target="_blank" rel="noopener noreferrer" style="--brand-color:#25D366"><span class="dot"></span>WhatsApp</a>
-      <a class="hs-btn" data-testid="hero-snapchat-btn" href="https://snapchat.com/t/OkSSAxsc" target="_blank" rel="noopener noreferrer" style="--brand-color:#FFFC00"><span class="dot"></span>Snapchat</a>
-      <a class="hs-btn" data-testid="hero-teams-btn" href="#" onclick="return false;" title="Candice Ferragamo" style="--brand-color:#6264A7"><span class="dot"></span>Teams</a>
-      <a class="hs-btn" data-testid="hero-wechat-btn" href="#" onclick="return false;" title="OliviaSparks" style="--brand-color:#07C160"><span class="dot"></span>WeChat</a>
+      <a class="hs-btn" data-testid="hero-telegram-btn" href="https://t.me/privatemaisoncandice" target="_blank" rel="noopener noreferrer" style="--brand-color:#2AABEE" data-link="l16"><span class="dot"></span>Telegram</a>
+      <a class="hs-btn" data-testid="hero-whatsapp-btn" href="https://wa.me/message/46V4TW2E5ASNF1" target="_blank" rel="noopener noreferrer" style="--brand-color:#25D366" data-link="l17"><span class="dot"></span>WhatsApp</a>
+      <a class="hs-btn" data-testid="hero-snapchat-btn" href="https://snapchat.com/t/OkSSAxsc" target="_blank" rel="noopener noreferrer" style="--brand-color:#FFFC00" data-link="l18"><span class="dot"></span>Snapchat</a>
+      <a class="hs-btn" data-testid="hero-teams-btn" href="#" onclick="return false;" title="Candice Ferragamo" style="--brand-color:#6264A7" data-link="l19"><span class="dot"></span>Teams</a>
+      <a class="hs-btn" data-testid="hero-wechat-btn" href="#" onclick="return false;" title="OliviaSparks" style="--brand-color:#07C160" data-link="l20"><span class="dot"></span>WeChat</a>
     </div>
   </div>
 </section>
 
 <!-- ============ ABOUT ============ -->
 <section id="candice">
-  <div class="wrap two reveal">
+  <div class="wrap two reveal in">
     <div>
       <div class="section-eyebrow">A little about me</div>
       <h2 class="serif">Grace, poise<br>&amp; <span class="it">quiet</span> power.</h2>
@@ -1416,7 +1931,7 @@ footer{
 
 <!-- ============ EXPERIENCES ============ -->
 <section id="experiences">
-  <div class="wrap reveal">
+  <div class="wrap reveal in">
     <div class="section-eyebrow">Signature experiences</div>
     <h2 class="serif">The menu — <span class="it">tailored for you.</span></h2>
     <p class="lead">Every session is curated. Choose the vibe — I'll set the mood.</p>
@@ -1432,7 +1947,7 @@ footer{
         <h3>Private Sessions</h3>
         <p>Exclusive, undivided attention. Just you, me, and whatever we decide to get up to.</p>
       </div>
-      <div class="card" data-restrict>
+      <div class="card" data-restrict="">
         <span class="card-num">03 / Intimate</span>
         <h3>Virtual Dates &amp; In Person</h3>
         <p>Wine, low light, slow conversation. Real connection online — or face to face, arranged with care and discretion.</p>
@@ -1449,7 +1964,7 @@ footer{
         <a href="#payments" class="tribute-btn" data-testid="send-tribute-btn">
           <span class="shine"></span>
           Send Tribute
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
         </a>
       </div>
       <div class="card">
@@ -1478,31 +1993,31 @@ footer{
 
 <!-- ============ GALLERY ============ -->
 <section id="gallery">
-  <div class="wrap reveal">
+  <div class="wrap reveal in">
     <div class="section-eyebrow">Editorial collections</div>
     <h2 class="serif">Gallery &amp; <span class="it">private frames.</span></h2>
     <p class="lead">A curated visual diary. Swap these placeholders for your own imagery whenever you're ready — every tile is a drop-in slot.</p>
 
     <div class="gallery-grid">
-      <div class="tile lg"><span class="tile-label">Editorial · No. 01</span></div>
-      <div class="tile md"><span class="tile-label">Boudoir</span></div>
-      <div class="tile sm"><span class="tile-label">Silk</span></div>
-      <div class="tile wide"><span class="tile-label">Travel diaries</span></div>
-      <div class="tile md"><span class="tile-label">Behind the scenes</span></div>
-      <div class="tile lg"><span class="tile-label">Featured moment</span></div>
+      <div class="tile lg" data-media="image" data-mid="m1"><span class="tile-label">Editorial · No. 01</span></div>
+      <div class="tile md" data-media="image" data-mid="m2"><span class="tile-label">Boudoir</span></div>
+      <div class="tile sm" data-media="image" data-mid="m3"><span class="tile-label">Silk</span></div>
+      <div class="tile wide" data-media="image" data-mid="m4"><span class="tile-label">Travel diaries</span></div>
+      <div class="tile md" data-media="image" data-mid="m5"><span class="tile-label">Behind the scenes</span></div>
+      <div class="tile lg" data-media="image" data-mid="m6"><span class="tile-label">Featured moment</span></div>
     </div>
   </div>
 </section>
 
 <!-- ============ VIDEO ============ -->
 <section id="videos">
-  <div class="wrap reveal">
+  <div class="wrap reveal in">
     <div class="section-eyebrow">Now playing</div>
     <h2 class="serif">Featured <span class="it">reel.</span></h2>
 
-    <div class="video-frame">
-      <button class="play-btn" aria-label="Play featured reel" onclick="alert('Drop your featured video source in the <video> tag when ready.')">
-        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/></svg>
+    <div class="video-frame" data-media="video" data-mid="m7">
+      <button class="play-btn" aria-label="Play featured reel" onclick="alert('Drop your featured video source in the &lt;video&gt; tag when ready.')">
+        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"></path></svg>
       </button>
       <div class="video-caption">
         <span class="dot"></span>
@@ -1514,14 +2029,14 @@ footer{
 
 <!-- ============ TRAVEL ============ -->
 <section id="travel">
-  <div class="wrap two reveal">
+  <div class="wrap two reveal in">
     <div>
       <div class="section-eyebrow">Currently based in</div>
-      <div class="location" data-restrict>
+      <div class="location" data-restrict="">
         United Arab<br>Emirates,<br>
         <span class="city">Dubai.</span>
       </div>
-      <div class="availability" data-restrict>
+      <div class="availability" data-restrict="">
         <span class="availability-dot"></span>
         Available 24 / 7
       </div>
@@ -1532,7 +2047,7 @@ footer{
         For privacy and safety, I never publish exact addresses, hotel details or coordinates.
       </p>
 
-      <div class="travel-list" data-restrict>
+      <div class="travel-list" data-restrict="">
         <div class="travel-row">
           <span class="place serif">Philippines</span>
           <span class="dates">JUL 04 — 13</span>
@@ -1547,7 +2062,7 @@ footer{
         </div>
       </div>
 
-      <a class="btn primary" href="#contact" style="margin-top:32px" data-restrict>
+      <a class="btn primary" href="#contact" style="margin-top:32px" data-restrict="">
         <span>Meet me somewhere</span><span class="arrow">→</span>
       </a>
     </div>
@@ -1556,7 +2071,7 @@ footer{
 
 <!-- ============ CONTACT ============ -->
 <section id="contact">
-  <div class="wrap reveal">
+  <div class="wrap reveal in">
     <div class="section-eyebrow">Private connection</div>
     <h2 class="serif">Come <span class="it">whisper</span> to me.</h2>
     <p class="lead">Pick your favourite channel. Available handles are clickable — the rest are clearly marked.
@@ -1565,9 +2080,9 @@ footer{
     <div class="contact-grid">
 
       <!-- EMAIL -->
-      <a class="contact-btn" href="mailto:private@maisoncandice.com" style="--brand-color:#e11d48">
+      <a class="contact-btn" href="mailto:private@maisoncandice.com" style="--brand-color:#e11d48" data-link="l7">
         <span class="contact-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 7 9 6 9-6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"></rect><path d="m3 7 9 6 9-6"></path></svg>
         </span>
         <div>
           <span class="contact-label">Email</span>
@@ -1577,9 +2092,9 @@ footer{
       </a>
 
       <!-- WHATSAPP -->
-      <a class="contact-btn" href="https://wa.me/message/46V4TW2E5ASNF1" target="_blank" rel="noopener noreferrer" style="--brand-color:#25D366">
+      <a class="contact-btn" href="https://wa.me/message/46V4TW2E5ASNF1" target="_blank" rel="noopener noreferrer" style="--brand-color:#25D366" data-link="l8">
         <span class="contact-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A10.9 10.9 0 0 0 12 0C5.5 0 .3 5.2.3 11.7c0 2.1.5 4.1 1.6 5.9L0 24l6.6-1.7c1.7.9 3.6 1.4 5.4 1.4 6.5 0 11.7-5.2 11.7-11.7 0-3.1-1.2-6-3.2-8.5zM12 21.8c-1.7 0-3.4-.4-4.8-1.3l-.3-.2-3.6.9.9-3.5-.2-.4A9.8 9.8 0 1 1 12 21.8zm5.4-7.3c-.3-.1-1.7-.9-2-1s-.5-.1-.7.1c-.2.3-.8 1-1 1.2s-.4.2-.7 0c-.3-.1-1.2-.4-2.4-1.4-.9-.8-1.4-1.7-1.6-2s0-.4.1-.5c.1-.1.3-.3.4-.5s.2-.3.3-.5c.1-.2 0-.4 0-.5s-.7-1.7-1-2.3c-.3-.6-.5-.5-.7-.5H7c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3s1 2.7 1.2 2.9c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.6.2-1.2.2-1.4-.1-.1-.3-.2-.6-.4z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A10.9 10.9 0 0 0 12 0C5.5 0 .3 5.2.3 11.7c0 2.1.5 4.1 1.6 5.9L0 24l6.6-1.7c1.7.9 3.6 1.4 5.4 1.4 6.5 0 11.7-5.2 11.7-11.7 0-3.1-1.2-6-3.2-8.5zM12 21.8c-1.7 0-3.4-.4-4.8-1.3l-.3-.2-3.6.9.9-3.5-.2-.4A9.8 9.8 0 1 1 12 21.8zm5.4-7.3c-.3-.1-1.7-.9-2-1s-.5-.1-.7.1c-.2.3-.8 1-1 1.2s-.4.2-.7 0c-.3-.1-1.2-.4-2.4-1.4-.9-.8-1.4-1.7-1.6-2s0-.4.1-.5c.1-.1.3-.3.4-.5s.2-.3.3-.5c.1-.2 0-.4 0-.5s-.7-1.7-1-2.3c-.3-.6-.5-.5-.7-.5H7c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3s1 2.7 1.2 2.9c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.6.2-1.2.2-1.4-.1-.1-.3-.2-.6-.4z"></path></svg>
         </span>
         <div>
           <span class="contact-label">WhatsApp</span>
@@ -1589,9 +2104,9 @@ footer{
       </a>
 
       <!-- VIBER -->
-      <a class="contact-btn" href="viber://chat?number=%2B971501256913" style="--brand-color:#7360F2">
+      <a class="contact-btn" href="viber://chat?number=%2B971501256913" style="--brand-color:#7360F2" data-link="l9">
         <span class="contact-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.1 2 11.2c0 1.9.6 3.7 1.7 5.2L2.4 22l5.9-1.6c1.1.6 2.4.9 3.7.9 5.5 0 10-4.1 10-9.2S17.5 2 12 2zm5.3 12.4c-.2.5-.6.8-1.1 1-.5.1-1 .1-1.5 0-.5-.1-1-.4-1.4-.6-.6-.3-1.2-.7-1.7-1.1-.6-.5-1.1-1-1.6-1.6-.4-.5-.8-1.1-1.1-1.7-.2-.4-.5-.9-.6-1.4-.1-.5-.1-1 0-1.5.2-.5.5-.9 1-1.1.2-.1.5-.2.7-.1.1 0 .2.1.3.2.2.3.5.7.7 1.1.1.2.2.5.1.7-.1.2-.2.4-.4.5-.1.1-.2.1-.3.2s-.1.1-.1.2c.2.6.5 1.2 1 1.7.4.4 1 .8 1.5 1 .1.1.2 0 .2-.1.1-.1.1-.2.2-.3.1-.2.3-.3.5-.4.2-.1.5 0 .7.1.3.2.7.5 1.1.7.1.1.2.2.2.3.1.4 0 .7-.1.9z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.1 2 11.2c0 1.9.6 3.7 1.7 5.2L2.4 22l5.9-1.6c1.1.6 2.4.9 3.7.9 5.5 0 10-4.1 10-9.2S17.5 2 12 2zm5.3 12.4c-.2.5-.6.8-1.1 1-.5.1-1 .1-1.5 0-.5-.1-1-.4-1.4-.6-.6-.3-1.2-.7-1.7-1.1-.6-.5-1.1-1-1.6-1.6-.4-.5-.8-1.1-1.1-1.7-.2-.4-.5-.9-.6-1.4-.1-.5-.1-1 0-1.5.2-.5.5-.9 1-1.1.2-.1.5-.2.7-.1.1 0 .2.1.3.2.2.3.5.7.7 1.1.1.2.2.5.1.7-.1.2-.2.4-.4.5-.1.1-.2.1-.3.2s-.1.1-.1.2c.2.6.5 1.2 1 1.7.4.4 1 .8 1.5 1 .1.1.2 0 .2-.1.1-.1.1-.2.2-.3.1-.2.3-.3.5-.4.2-.1.5 0 .7.1.3.2.7.5 1.1.7.1.1.2.2.2.3.1.4 0 .7-.1.9z"></path></svg>
         </span>
         <div>
           <span class="contact-label">Viber</span>
@@ -1601,9 +2116,9 @@ footer{
       </a>
 
       <!-- SNAPCHAT -->
-      <a class="contact-btn" href="https://snapchat.com/t/OkSSAxsc" target="_blank" rel="noopener noreferrer" style="--brand-color:#FFFC00">
+      <a class="contact-btn" href="https://snapchat.com/t/OkSSAxsc" target="_blank" rel="noopener noreferrer" style="--brand-color:#FFFC00" data-link="l10">
         <span class="contact-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c3.3 0 5.5 2.3 5.6 5.5.1 1.4 0 2.3-.1 3.2 0 .2.1.3.3.4.2.1.6.2 1 .3.3.1.5.2.5.5s-.5.7-1.2 1c-.5.2-.7.6-.9 1-.1.4-.3.6-.6.6-.2 0-.5-.1-.7-.1-.5-.1-1-.1-1.5.1-.3.1-.5.3-.7.6-.7 1-1.9 1.5-3.2 1.5-1.3 0-2.5-.6-3.2-1.5-.2-.3-.4-.5-.7-.6-.5-.2-1-.2-1.5-.1-.2 0-.5.1-.7.1-.3 0-.5-.2-.6-.6-.2-.5-.4-.8-.9-1-.7-.3-1.2-.7-1.2-1s.2-.4.5-.5c.4-.1.8-.2 1-.3.2-.1.3-.2.3-.4-.1-.9-.2-1.8-.1-3.2C6.5 4.3 8.7 2 12 2z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c3.3 0 5.5 2.3 5.6 5.5.1 1.4 0 2.3-.1 3.2 0 .2.1.3.3.4.2.1.6.2 1 .3.3.1.5.2.5.5s-.5.7-1.2 1c-.5.2-.7.6-.9 1-.1.4-.3.6-.6.6-.2 0-.5-.1-.7-.1-.5-.1-1-.1-1.5.1-.3.1-.5.3-.7.6-.7 1-1.9 1.5-3.2 1.5-1.3 0-2.5-.6-3.2-1.5-.2-.3-.4-.5-.7-.6-.5-.2-1-.2-1.5-.1-.2 0-.5.1-.7.1-.3 0-.5-.2-.6-.6-.2-.5-.4-.8-.9-1-.7-.3-1.2-.7-1.2-1s.2-.4.5-.5c.4-.1.8-.2 1-.3.2-.1.3-.2.3-.4-.1-.9-.2-1.8-.1-3.2C6.5 4.3 8.7 2 12 2z"></path></svg>
         </span>
         <div>
           <span class="contact-label">Snapchat</span>
@@ -1613,9 +2128,9 @@ footer{
       </a>
 
       <!-- MICROSOFT TEAMS -->
-      <a class="contact-btn" data-testid="contact-teams-btn" href="#" onclick="return false;" style="--brand-color:#6264A7">
+      <a class="contact-btn" data-testid="contact-teams-btn" href="#" onclick="return false;" style="--brand-color:#6264A7" data-link="l11">
         <span class="contact-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/><path d="M2 20v-1a6 6 0 0 1 6-6h1a6 6 0 0 1 6 6v1"/><rect x="14.5" y="3.5" width="7.5" height="7.5" rx="1.5"/><path d="M16.4 5.9h3.6M18.2 5.9v3.5"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"></path><path d="M2 20v-1a6 6 0 0 1 6-6h1a6 6 0 0 1 6 6v1"></path><rect x="14.5" y="3.5" width="7.5" height="7.5" rx="1.5"></rect><path d="M16.4 5.9h3.6M18.2 5.9v3.5"></path></svg>
         </span>
         <div>
           <span class="contact-label">Microsoft Teams</span>
@@ -1625,9 +2140,9 @@ footer{
       </a>
 
       <!-- LIVEJASMIN -->
-      <a class="contact-btn" href="https://www.livejasmin.com/candiceferragamo" target="_blank" rel="noopener noreferrer" style="--brand-color:#e11d48">
+      <a class="contact-btn" href="https://www.livejasmin.com/candiceferragamo" target="_blank" rel="noopener noreferrer" style="--brand-color:#e11d48" data-link="l12">
         <span class="contact-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="1"/><path d="m22 8-6 4 6 4V8z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="1"></rect><path d="m22 8-6 4 6 4V8z"></path></svg>
         </span>
         <div>
           <span class="contact-label">LiveJasmin</span>
@@ -1637,9 +2152,9 @@ footer{
       </a>
 
       <!-- CHATURBATE -->
-      <a class="contact-btn" href="https://www.chaturbate.com/forbidden_candice" target="_blank" rel="noopener noreferrer" style="--brand-color:#f4a900">
+      <a class="contact-btn" href="https://www.chaturbate.com/forbidden_candice" target="_blank" rel="noopener noreferrer" style="--brand-color:#f4a900" data-link="l13">
         <span class="contact-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"></path></svg>
         </span>
         <div>
           <span class="contact-label">Chaturbate</span>
@@ -1649,9 +2164,9 @@ footer{
       </a>
 
       <!-- WECHAT -->
-      <a class="contact-btn" data-testid="contact-wechat-btn" href="#" onclick="return false;" style="--brand-color:#07C160">
+      <a class="contact-btn" data-testid="contact-wechat-btn" href="#" onclick="return false;" style="--brand-color:#07C160" data-link="l14">
         <span class="contact-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12A5 5 0 1 0 8 2a5 5 0 0 0 0 10zM3 15c1.5-1.5 3-2 5-2s3.5.5 5 2M15 21a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 22c1-1 2-1.5 3-1.5s2 .5 3 1.5"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12A5 5 0 1 0 8 2a5 5 0 0 0 0 10zM3 15c1.5-1.5 3-2 5-2s3.5.5 5 2M15 21a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 22c1-1 2-1.5 3-1.5s2 .5 3 1.5"></path></svg>
         </span>
         <div>
           <span class="contact-label">WeChat</span>
@@ -1661,9 +2176,9 @@ footer{
       </a>
 
       <!-- TELEGRAM -->
-      <a class="contact-btn" data-testid="contact-telegram-btn" href="https://t.me/privatemaisoncandice" target="_blank" rel="noopener noreferrer" style="--brand-color:#2AABEE">
+      <a class="contact-btn" data-testid="contact-telegram-btn" href="https://t.me/privatemaisoncandice" target="_blank" rel="noopener noreferrer" style="--brand-color:#2AABEE" data-link="l15">
         <span class="contact-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="m22 3-3 17-6-5-3 3v-5l11-9-13 8-4-1z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="m22 3-3 17-6-5-3 3v-5l11-9-13 8-4-1z"></path></svg>
         </span>
         <div>
           <span class="contact-label">Telegram</span>
@@ -1678,13 +2193,13 @@ footer{
 
 <!-- ============ BOOKING ============ -->
 <section id="booking">
-  <div class="wrap reveal">
+  <div class="wrap reveal in">
     <div class="section-eyebrow">By application only</div>
     <h2 class="serif">Request a <span class="it">session.</span></h2>
     <p class="lead">Cold messages rarely impress me. Tell me who you are and what you have in mind — properly.
        Applications are read personally and answered at my discretion.</p>
 
-    <form class="booking-form" id="bookingForm" data-testid="booking-form" novalidate>
+    <form class="booking-form" id="bookingForm" data-testid="booking-form" novalidate="">
       <div class="bf-grid">
         <div class="bf-field">
           <label for="bfName">Name / alias *</label>
@@ -1718,7 +2233,7 @@ footer{
             <option>A Tailored Encounter</option>
           </select>
         </div>
-        <div class="bf-field" data-restrict>
+        <div class="bf-field" data-restrict="">
           <label>Virtual or in person *</label>
           <div class="bf-toggle" data-testid="booking-mode-toggle">
             <button type="button" class="bf-mode active" data-mode="Virtual" data-testid="booking-mode-virtual">Virtual</button>
@@ -1749,7 +2264,7 @@ footer{
 
 <!-- ============ GIFTS / PAYMENTS ============ -->
 <section id="payments">
-  <div class="wrap reveal">
+  <div class="wrap reveal in">
     <div class="section-eyebrow">Gifts &amp; Private Arrangements</div>
     <h2 class="serif">Spoil me <span class="it">a little.</span></h2>
     <p class="lead">Thoughtful gestures are never expected — but they are always noticed, and they never go unrewarded.</p>
@@ -1763,63 +2278,63 @@ footer{
       <!-- WISE -->
       <div class="pay-card available">
         <div class="pay-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h14l-8 14"/><path d="M9 12h9"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h14l-8 14"></path><path d="M9 12h9"></path></svg>
         </div>
         <h3>Wise</h3>
         <p>International transfers, low fees, near-instant across most currencies.</p>
         <div class="pay-detail">wise.com/pay/me/jakejungieja</div>
-        <a class="pay-btn" href="https://wise.com/pay/me/jakejungieja" target="_blank" rel="noopener noreferrer">Send a gift <span>→</span></a>
+        <a class="pay-btn" href="https://wise.com/pay/me/jakejungieja" target="_blank" rel="noopener noreferrer" data-link="l1">Send a gift <span>→</span></a>
       </div>
 
       <!-- PAYPAL -->
       <div class="pay-card available">
         <div class="pay-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 21H5.5c-.6 0-1-.5-.9-1L7 4c.1-.6.6-1 1.2-1H14c3.1 0 5 2 4.5 5-.5 3.2-3 5-6 5h-2.3c-.4 0-.8.3-.9.7L8 21zM17 8.5c-.4 2.5-2.4 4-5 4h-1.7c-.4 0-.8.3-.9.7L8.2 20c-.1.4.2.7.6.7h1.9c.5 0 1-.4 1.1-.9l.7-3.7c.1-.4.5-.7.9-.7H15c2.5 0 4.5-1.5 5-4 .4-2.4-.9-3.9-3-3.9z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 21H5.5c-.6 0-1-.5-.9-1L7 4c.1-.6.6-1 1.2-1H14c3.1 0 5 2 4.5 5-.5 3.2-3 5-6 5h-2.3c-.4 0-.8.3-.9.7L8 21zM17 8.5c-.4 2.5-2.4 4-5 4h-1.7c-.4 0-.8.3-.9.7L8.2 20c-.1.4.2.7.6.7h1.9c.5 0 1-.4 1.1-.9l.7-3.7c.1-.4.5-.7.9-.7H15c2.5 0 4.5-1.5 5-4 .4-2.4-.9-3.9-3-3.9z"></path></svg>
         </div>
         <h3>PayPal</h3>
         <p>Preferred for one-off gifts and international support.</p>
         <div class="pay-detail">bettafy.co@gmail.com</div>
-        <a class="pay-btn" href="mailto:bettafy.co@gmail.com?subject=Gift%20for%20Candice">Contact for PayPal <span>→</span></a>
+        <a class="pay-btn" href="mailto:bettafy.co@gmail.com?subject=Gift%20for%20Candice" data-link="l2">Contact for PayPal <span>→</span></a>
       </div>
 
       <!-- CARD -->
       <div class="pay-card">
         <div class="pay-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20M6 15h4"></path></svg>
         </div>
         <h3>Card Payment</h3>
         <p>Secure card checkout — link goes here as soon as the processor is connected.</p>
-        <a class="pay-btn off" href="#" onclick="return false;">Coming soon</a>
+        <a class="pay-btn off" href="#" onclick="return false;" data-link="l3">Coming soon</a>
       </div>
 
       <!-- PAXUM -->
       <div class="pay-card">
         <div class="pay-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h6a2 2 0 0 0 0-4H8v10"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8 12h6a2 2 0 0 0 0-4H8v10"></path></svg>
         </div>
         <h3>Paxum</h3>
         <p>Industry-standard digital wallet for creators. Details on request.</p>
-        <a class="pay-btn off" href="#" onclick="return false;">Coming soon</a>
+        <a class="pay-btn off" href="#" onclick="return false;" data-link="l4">Coming soon</a>
       </div>
 
       <!-- CRYPTO -->
       <div class="pay-card">
         <div class="pay-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v16M15 4v16M6 8h9a3 3 0 0 1 0 6H6M6 14h10a3 3 0 0 1 0 6H6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v16M15 4v16M6 8h9a3 3 0 0 1 0 6H6M6 14h10a3 3 0 0 1 0 6H6"></path></svg>
         </div>
         <h3>Cryptocurrency</h3>
         <p>Bitcoin, USDT, ETH — wallet addresses will be provided on verified request.</p>
-        <a class="pay-btn off" href="#" onclick="return false;">On request</a>
+        <a class="pay-btn off" href="#" onclick="return false;" data-link="l5">On request</a>
       </div>
 
       <!-- OTHER -->
       <div class="pay-card">
         <div class="pay-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9 4.9 19.1"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9 4.9 19.1"></path></svg>
         </div>
         <h3>Other Options</h3>
         <p>Additional verified methods can be arranged privately — just ask.</p>
-        <a class="pay-btn off" href="#" onclick="return false;">Enquire</a>
+        <a class="pay-btn off" href="#" onclick="return false;" data-link="l6">Enquire</a>
       </div>
 
     </div>
@@ -1828,12 +2343,12 @@ footer{
 
 <!-- ============ FAQ ============ -->
 <section id="faq">
-  <div class="wrap reveal">
+  <div class="wrap reveal in">
     <div class="section-eyebrow">Questions</div>
     <h2 class="serif">Frequently <span class="it">asked.</span></h2>
 
     <div class="faq-list">
-      <details class="faq" open>
+      <details class="faq" open="">
         <summary>
           <h3>How do I get in touch?</h3>
           <span class="faq-toggle">+</span>
@@ -1892,7 +2407,7 @@ footer{
 
 <!-- ============ PRIVACY ============ -->
 <section id="privacy">
-  <div class="wrap reveal">
+  <div class="wrap reveal in">
     <div class="section-eyebrow">Privacy &amp; Discretion</div>
     <h2 class="serif">A quiet <span class="it">promise.</span></h2>
     <div class="privacy-note">
@@ -2003,6 +2518,902 @@ const io=new IntersectionObserver((entries)=>{
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
 
-<script src="admin.js" defer></script>
-</body>
-</html>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a32529b28fad3ed7',t:'MTc4NzkzOTQ3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; visibility: hidden;"></iframe><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v3d52b47920f24c319d37e2661827c42b1787588026925" integrity="sha512-d9sL6GJLXn6fInD1+TVXhTcQOsmxeHfmHAvwGDIxp5TO+uo1fiWW7mHomMj4MLRlCsJDTqXzWLHJFFlPCEIj/A==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;7f7b0fd8732c4326aae4b9d58d5c514a&quot;}" crossorigin="anonymous"></script>
+
+
+
+
+
+<div class="geo-blur-banner" id="geoBlurBanner" data-testid="geo-blur-banner">
+  <span class="gbb-dot"></span>Some content is hidden for privacy in your region
+</div>
+
+
+
+
+
+
+
+
+
+<script>
+(function(){try{
+  var K={content:'candice_content',media:'candice_media',links:'candice_links',blocked:'candice_blocked_countries'};
+  if(!localStorage.getItem(K.blocked)) localStorage.setItem(K.blocked, "[\"AE\"]");
+  if(!localStorage.getItem(K.content)) localStorage.setItem(K.content, "{}");
+  if(!localStorage.getItem(K.media))   localStorage.setItem(K.media,   "{}");
+  if(!localStorage.getItem(K.links))   localStorage.setItem(K.links,   "{}");
+}catch(e){}})();
+</script><script>/* =========================================================
+   CANDICE — BACKSTAGE ADMIN
+   All admin logic lives here. Nothing admin-related appears
+   in the DOM until this script runs and injects it.
+
+   Trigger: Ctrl / Cmd + Shift + K   or add #backstage to URL
+   Login is verified server-side (JWT). Change the password inside → Settings.
+   ========================================================= */
+(function(){
+
+const LS = {
+  token:'candice_admin_token',
+  session:'candice_admin_session',
+  content:'candice_content',
+  media:'candice_media',
+  links:'candice_links',
+  blocked:'candice_blocked_countries'
+};
+
+/* ---------- Country list ---------- */
+const COUNTRIES = [
+  ["AF","Afghanistan"],["AL","Albania"],["DZ","Algeria"],["AS","American Samoa"],["AD","Andorra"],["AO","Angola"],["AI","Anguilla"],["AG","Antigua and Barbuda"],["AR","Argentina"],["AM","Armenia"],["AW","Aruba"],["AU","Australia"],["AT","Austria"],["AZ","Azerbaijan"],["BS","Bahamas"],["BH","Bahrain"],["BD","Bangladesh"],["BB","Barbados"],["BY","Belarus"],["BE","Belgium"],["BZ","Belize"],["BJ","Benin"],["BM","Bermuda"],["BT","Bhutan"],["BO","Bolivia"],["BA","Bosnia and Herzegovina"],["BW","Botswana"],["BR","Brazil"],["BN","Brunei"],["BG","Bulgaria"],["BF","Burkina Faso"],["BI","Burundi"],["KH","Cambodia"],["CM","Cameroon"],["CA","Canada"],["CV","Cape Verde"],["KY","Cayman Islands"],["CF","Central African Republic"],["TD","Chad"],["CL","Chile"],["CN","China"],["CO","Colombia"],["KM","Comoros"],["CG","Congo"],["CD","Congo (DRC)"],["CR","Costa Rica"],["CI","Côte d'Ivoire"],["HR","Croatia"],["CU","Cuba"],["CY","Cyprus"],["CZ","Czech Republic"],["DK","Denmark"],["DJ","Djibouti"],["DM","Dominica"],["DO","Dominican Republic"],["EC","Ecuador"],["EG","Egypt"],["SV","El Salvador"],["GQ","Equatorial Guinea"],["ER","Eritrea"],["EE","Estonia"],["SZ","Eswatini"],["ET","Ethiopia"],["FJ","Fiji"],["FI","Finland"],["FR","France"],["GA","Gabon"],["GM","Gambia"],["GE","Georgia"],["DE","Germany"],["GH","Ghana"],["GI","Gibraltar"],["GR","Greece"],["GL","Greenland"],["GD","Grenada"],["GU","Guam"],["GT","Guatemala"],["GN","Guinea"],["GW","Guinea-Bissau"],["GY","Guyana"],["HT","Haiti"],["HN","Honduras"],["HK","Hong Kong"],["HU","Hungary"],["IS","Iceland"],["IN","India"],["ID","Indonesia"],["IR","Iran"],["IQ","Iraq"],["IE","Ireland"],["IL","Israel"],["IT","Italy"],["JM","Jamaica"],["JP","Japan"],["JO","Jordan"],["KZ","Kazakhstan"],["KE","Kenya"],["KI","Kiribati"],["KP","North Korea"],["KR","South Korea"],["KW","Kuwait"],["KG","Kyrgyzstan"],["LA","Laos"],["LV","Latvia"],["LB","Lebanon"],["LS","Lesotho"],["LR","Liberia"],["LY","Libya"],["LI","Liechtenstein"],["LT","Lithuania"],["LU","Luxembourg"],["MO","Macau"],["MG","Madagascar"],["MW","Malawi"],["MY","Malaysia"],["MV","Maldives"],["ML","Mali"],["MT","Malta"],["MH","Marshall Islands"],["MR","Mauritania"],["MU","Mauritius"],["MX","Mexico"],["FM","Micronesia"],["MD","Moldova"],["MC","Monaco"],["MN","Mongolia"],["ME","Montenegro"],["MA","Morocco"],["MZ","Mozambique"],["MM","Myanmar"],["NA","Namibia"],["NR","Nauru"],["NP","Nepal"],["NL","Netherlands"],["NZ","New Zealand"],["NI","Nicaragua"],["NE","Niger"],["NG","Nigeria"],["MK","North Macedonia"],["NO","Norway"],["OM","Oman"],["PK","Pakistan"],["PW","Palau"],["PS","Palestine"],["PA","Panama"],["PG","Papua New Guinea"],["PY","Paraguay"],["PE","Peru"],["PH","Philippines"],["PL","Poland"],["PT","Portugal"],["PR","Puerto Rico"],["QA","Qatar"],["RO","Romania"],["RU","Russia"],["RW","Rwanda"],["WS","Samoa"],["SM","San Marino"],["SA","Saudi Arabia"],["SN","Senegal"],["RS","Serbia"],["SC","Seychelles"],["SL","Sierra Leone"],["SG","Singapore"],["SK","Slovakia"],["SI","Slovenia"],["SB","Solomon Islands"],["SO","Somalia"],["ZA","South Africa"],["SS","South Sudan"],["ES","Spain"],["LK","Sri Lanka"],["SD","Sudan"],["SR","Suriname"],["SE","Sweden"],["CH","Switzerland"],["SY","Syria"],["TW","Taiwan"],["TJ","Tajikistan"],["TZ","Tanzania"],["TH","Thailand"],["TL","Timor-Leste"],["TG","Togo"],["TO","Tonga"],["TT","Trinidad and Tobago"],["TN","Tunisia"],["TR","Turkey"],["TM","Turkmenistan"],["TV","Tuvalu"],["UG","Uganda"],["UA","Ukraine"],["AE","United Arab Emirates"],["GB","United Kingdom"],["US","United States"],["UY","Uruguay"],["UZ","Uzbekistan"],["VU","Vanuatu"],["VA","Vatican City"],["VE","Venezuela"],["VN","Vietnam"],["YE","Yemen"],["ZM","Zambia"],["ZW","Zimbabwe"]
+];
+
+/* ---------- Editable selectors (text) ---------- */
+const EDITABLE_SELECTORS = [
+  '.hero h1 .line span','.hero p.lead',
+  '.hero-meta-item .k','.hero-meta-item .v',
+  '.eyebrow','.section-eyebrow','h2','h3','.lead',
+  '.about-quote','.gift-quote','.card p','.card-num','.tag','.tile-label',
+  '.location','.travel-row .place','.travel-row .dates',
+  '.contact-label','.contact-handle',
+  '.pay-card p','.pay-detail',
+  '.faq summary h3','.faq p',
+  '.privacy-note','.foot-brand','.foot-note'
+];
+
+/* ---------- Media slot selectors ---------- */
+const MEDIA_SLOTS = [
+  {sel:'.gallery-grid .tile', kind:'image'},
+  {sel:'.video-frame', kind:'video'}
+];
+
+/* ---------- Editable link selectors ---------- */
+const LINK_SELECTORS = ['.pay-btn','.contact-btn','.hero-social .hs-btn'];
+
+/* =========================================================
+   INJECT ADMIN HTML INTO DOM
+   ========================================================= */
+function injectAdminHTML(){
+  const html = `
+<div class="geo-block" id="geoBlock">
+  <div class="geo-card">
+    <div class="age-eyebrow" style="color:var(--crimson-hot)">ACCESS RESTRICTED</div>
+    <h2>Not available <br>in your region.</h2>
+    <p>Regrettably, this private experience isn't currently accessible from your location.
+       Thank you for your understanding — discretion works both ways.</p>
+    <div class="country" id="geoCountry">—</div>
+  </div>
+</div>
+
+<div class="geo-blur-banner" id="geoBlurBanner" data-testid="geo-blur-banner">
+  <span class="gbb-dot"></span>Some content is hidden for privacy in your region
+</div>
+
+<div class="admin-login" id="adminLogin" role="dialog" aria-modal="true">
+  <div class="admin-login-card">
+    <h3>Backstage.</h3>
+    <p>Enter your password to edit the site.</p>
+    <input type="password" class="admin-input" id="adminPassInput" placeholder="Password" autocomplete="off">
+    <div class="admin-row">
+      <button class="admin-btn ghost" id="btnAdminCancel">CANCEL</button>
+      <button class="admin-btn" id="btnAdminEnter">ENTER</button>
+    </div>
+    <div class="admin-err" id="adminErr"></div>
+  </div>
+</div>
+
+<aside class="admin-panel" id="adminPanel" aria-label="Admin panel">
+  <div class="admin-head">
+    <h4>Backstage · Candice</h4>
+    <button class="admin-close" id="btnAdminClose" aria-label="Close">×</button>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-tab="edit">EDIT</button>
+    <button class="admin-tab" data-tab="requests">REQUESTS</button>
+    <button class="admin-tab" data-tab="stats">STATS</button>
+    <button class="admin-tab" data-tab="geo">COUNTRIES</button>
+    <button class="admin-tab" data-tab="settings">SETTINGS</button>
+  </div>
+
+  <div class="admin-body">
+    <div class="admin-section active" data-section="edit">
+      <div class="admin-tip">Turn on edit mode, then click any text or media slot on the page to change it. Your edits save automatically to this browser.</div>
+      <div class="edit-status" id="editStatus">
+        <div class="sw"></div>
+        <span>Edit mode</span>
+        <small>OFF</small>
+      </div>
+      <div class="admin-label">Editable text</div>
+      <div class="admin-tip">Headings, paragraphs, captions, contact handles, payment details, travel dates, tags.</div>
+      <div class="admin-label">Editable media</div>
+      <div class="admin-tip">Gallery tiles (photos) and the featured video slot. Uploads are stored in the cloud and visible to every visitor — or paste any URL.</div>
+      <div class="admin-label">Editable links</div>
+      <div class="admin-tip">With edit mode ON, click any contact, social or payment button to change where it points (Telegram, Wise, PayPal…).</div>
+      <div class="admin-label">Reset</div>
+      <button class="admin-action-btn danger" id="btnResetText">↺&nbsp;&nbsp;Restore original text</button>
+      <button class="admin-action-btn danger" id="btnResetMedia" style="margin-top:8px">↺&nbsp;&nbsp;Remove all uploaded media</button>
+    </div>
+
+    <div class="admin-section" data-section="requests">
+      <div class="blocked-count" id="reqCount">Loading…</div>
+      <div class="req-list" id="reqList"></div>
+      <div class="admin-tip" id="reqErr" style="display:none;color:var(--crimson-hot)">Couldn't load requests — backend unreachable.</div>
+    </div>
+
+    <div class="admin-section" data-section="stats">
+      <div class="admin-tip">Distinct admirers per day — counted once per visitor per day. Your own backstage visits are never counted.</div>
+      <div class="stats-grid">
+        <div class="stat-box"><b id="statToday">—</b><span>Today</span></div>
+        <div class="stat-box"><b id="statWeek">—</b><span>Last 7 days</span></div>
+        <div class="stat-box"><b id="statAll">—</b><span>All time</span></div>
+      </div>
+      <div class="admin-label" style="margin-top:20px">Where they visit from</div>
+      <div class="country-stats" id="countryStats"><div class="admin-tip">No country data yet.</div></div>
+      <div class="admin-tip" id="statsErr" style="display:none;color:var(--crimson-hot)">Couldn't load stats — backend unreachable.</div>
+    </div>
+
+    <div class="admin-section" data-section="geo">
+      <div class="admin-tip">Blocked visitors still see your site, but the escort / in-person details (location, travel dates, availability, the in-person options) are blurred out. Everything else stays readable. Detection uses their public IP.</div>
+      <div class="blocked-count" id="blockedCount">0 countries blocked</div>
+      <input type="text" class="country-search" id="countrySearch" placeholder="Search country…">
+      <div class="country-list" id="countryList"></div>
+      <button class="admin-btn" id="btnPreviewGeo" data-testid="preview-blocked-btn" style="margin-top:14px;width:100%">👁 Preview as blocked country</button>
+      <div class="admin-tip warn" style="margin-top:12px">Tip: your own visits are exempt on this device while you're logged in to backstage. Use the preview button above to see exactly what a blocked visitor sees.</div>
+    </div>
+
+    <div class="admin-section" data-section="settings">
+      <div class="admin-label">Change admin password</div>
+      <input type="password" class="admin-input" id="curPass" placeholder="Current password" autocomplete="current-password" style="margin-bottom:8px">
+      <input type="password" class="admin-input" id="newPass" placeholder="New password" autocomplete="new-password">
+      <div class="admin-row">
+        <button class="admin-btn" id="btnSavePass">SAVE PASSWORD</button>
+      </div>
+      <div class="admin-label" style="margin-top:24px">How to reopen this panel</div>
+      <div class="admin-tip">Press <strong style="color:var(--champagne)">Ctrl / ⌘ + Shift + K</strong> anywhere on the site, or add <strong style="color:var(--champagne)">#backstage</strong> to the URL.</div>
+      <div class="admin-label">Session</div>
+      <button class="admin-action-btn" id="btnLogout">→&nbsp;&nbsp;Log out of backstage</button>
+    </div>
+  </div>
+
+  <div class="admin-actions">
+    <button class="admin-action-btn primary" id="btnExport">⬇&nbsp;&nbsp;Export as index.html (with edits baked in)</button>
+  </div>
+</aside>
+
+<div class="media-picker" id="mediaPicker">
+  <div class="media-picker-card">
+    <h3 id="mediaPickerTitle">Change photo</h3>
+    <p>Upload from this device, or paste a URL from anywhere on the web.</p>
+    <div class="media-tabs">
+      <button class="media-tab active" data-mtab="upload">UPLOAD</button>
+      <button class="media-tab" data-mtab="url">URL</button>
+    </div>
+    <div id="mediaTabUpload">
+      <label class="media-drop" id="mediaDrop">
+        <span class="big">Drop file or click to browse</span>
+        <span id="mediaDropHint">JPG · PNG · WEBP · GIF up to ~4 MB</span>
+        <input type="file" id="mediaFile" accept="image/*">
+      </label>
+    </div>
+    <div id="mediaTabUrl" style="display:none">
+      <input type="text" class="admin-input" id="mediaUrl" placeholder="https://…">
+      <div class="admin-tip" style="margin-top:12px">Tip: for video, paste a direct <strong>.mp4</strong> URL (YouTube/Vimeo embeds are not supported here).</div>
+    </div>
+    <div class="admin-row" style="margin-top:18px">
+      <button class="admin-btn ghost" id="btnMediaCancel">CANCEL</button>
+      <button class="admin-btn ghost" id="btnMediaRemove">REMOVE MEDIA</button>
+      <button class="admin-btn" id="btnMediaSave">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<div class="admin-toast" id="adminToast"></div>
+`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+/* =========================================================
+   TAG EDITABLE ELEMENTS
+   ========================================================= */
+let editableIdCounter = 0;
+function tagEditable(){
+  EDITABLE_SELECTORS.forEach(sel=>{
+    document.querySelectorAll(sel).forEach(el=>{
+      if(el.closest('.admin-panel')||el.closest('.admin-login')||el.closest('.geo-block')||el.closest('.age-gate')||el.closest('.media-picker')) return;
+      if(!el.dataset.edit) el.dataset.edit = 'e'+(++editableIdCounter);
+    });
+  });
+}
+let linkIdCounter = 0;
+function tagLinks(){
+  LINK_SELECTORS.forEach(sel=>{
+    document.querySelectorAll(sel).forEach(el=>{
+      if(!el.dataset.link) el.dataset.link = 'l'+(++linkIdCounter);
+    });
+  });
+}
+function loadLinks(){
+  try{
+    const raw = localStorage.getItem(LS.links);
+    if(raw){
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach(id=>{
+        const el = document.querySelector('[data-link="'+id+'"]');
+        if(el) el.setAttribute('href', data[id]);
+      });
+    }
+  }catch(e){}
+}
+function saveLink(el, url){
+  el.setAttribute('href', url);
+  try{
+    const data = JSON.parse(localStorage.getItem(LS.links)||'{}');
+    data[el.dataset.link] = url;
+    localStorage.setItem(LS.links, JSON.stringify(data));
+    showToast('Link updated');
+  }catch(e){showToast('Storage full')}
+}
+function handleLinkEditClick(e){
+  if(!editMode) return;
+  const link = e.target.closest('[data-link]');
+  if(!link) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if(e.target.closest('[data-edit]')) return; // let text editing happen
+  const current = link.getAttribute('href') || '';
+  const url = prompt('Link URL for this button:', current);
+  if(url && url.trim()) saveLink(link, url.trim());
+}
+
+let mediaIdCounter = 0;
+function tagMedia(){
+  MEDIA_SLOTS.forEach(({sel,kind})=>{
+    document.querySelectorAll(sel).forEach(el=>{
+      if(!el.dataset.media){
+        el.dataset.media = kind;
+        el.dataset.mid = 'm'+(++mediaIdCounter);
+        const btn = document.createElement('button');
+        btn.className='media-edit-btn';
+        btn.type='button';
+        btn.textContent = kind==='video' ? '▶ Change video' : '✎ Change photo';
+        btn.addEventListener('click',(e)=>{
+          e.preventDefault();e.stopPropagation();
+          openMediaPicker(el);
+        });
+        el.appendChild(btn);
+      }
+    });
+  });
+}
+
+/* =========================================================
+   CONTENT PERSISTENCE
+   ========================================================= */
+function loadContent(){
+  try{
+    const raw = localStorage.getItem(LS.content);
+    if(raw){
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach(id=>{
+        const el = document.querySelector('[data-edit="'+id+'"]');
+        if(el) el.innerHTML = data[id];
+      });
+    }
+  }catch(e){}
+}
+function saveContent(){
+  const data = {};
+  document.querySelectorAll('[data-edit]').forEach(el=>{
+    data[el.dataset.edit] = el.innerHTML;
+  });
+  try{localStorage.setItem(LS.content, JSON.stringify(data));showToast('Saved');}catch(e){showToast('Storage full')}
+}
+function loadMedia(){
+  try{
+    const raw = localStorage.getItem(LS.media);
+    if(raw){
+      const data = JSON.parse(raw);
+      Object.keys(data).forEach(mid=>applyMedia(mid, data[mid]));
+    }
+  }catch(e){}
+}
+function getMediaStore(){
+  try{return JSON.parse(localStorage.getItem(LS.media)||'{}')}catch(e){return {}}
+}
+function setMediaStore(store){
+  try{localStorage.setItem(LS.media, JSON.stringify(store));return true;}
+  catch(e){showToast('File too large');return false;}
+}
+function applyMedia(mid, src){
+  const el = document.querySelector('[data-mid="'+mid+'"]');
+  if(!el || !src) return;
+  el.querySelectorAll('.injected-media').forEach(n=>n.remove());
+  const tag = el.dataset.media==='video' ? 'video' : 'img';
+  const node = document.createElement(tag);
+  node.className='injected-media';
+  node.src = src;
+  if(tag==='video'){
+    node.muted = true; node.loop = true; node.autoplay = true; node.playsInline = true;
+    node.setAttribute('preload','metadata');
+  } else {
+    node.alt='';
+  }
+  el.insertBefore(node, el.firstChild);
+  el.classList.add('has-media');
+}
+function clearMedia(mid){
+  const el = document.querySelector('[data-mid="'+mid+'"]');
+  if(el){
+    el.querySelectorAll('.injected-media').forEach(n=>n.remove());
+    el.classList.remove('has-media');
+  }
+  const store = getMediaStore();
+  delete store[mid];
+  setMediaStore(store);
+}
+
+function resetContent(){
+  if(!confirm('Restore all text to the original? Your edits will be lost.')) return;
+  try{localStorage.removeItem(LS.content);localStorage.removeItem(LS.links)}catch(e){}
+  location.reload();
+}
+function resetMedia(){
+  if(!confirm('Remove every uploaded photo and video? Original placeholders will return.')) return;
+  try{localStorage.removeItem(LS.media)}catch(e){}
+  location.reload();
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('adminToast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* =========================================================
+   EDIT MODE
+   ========================================================= */
+let editMode = false;
+function toggleEditMode(){
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  const st = document.getElementById('editStatus');
+  st.classList.toggle('on', editMode);
+  st.querySelector('small').textContent = editMode ? 'ON' : 'OFF';
+  document.querySelectorAll('[data-edit]').forEach(el=>{
+    el.contentEditable = editMode ? 'true' : 'false';
+    if(editMode && !el._bound){
+      el._bound = true;
+      el.addEventListener('blur', saveContent);
+      el.addEventListener('keydown', e=>{
+        if(e.key==='Enter' && !e.shiftKey && el.tagName!=='P' && !el.classList.contains('lead') && !el.classList.contains('privacy-note')){
+          e.preventDefault();el.blur();
+        }
+      });
+    }
+  });
+}
+
+/* =========================================================
+   MEDIA PICKER
+   ========================================================= */
+let currentMediaTarget = null;
+let currentMediaTab = 'upload';
+function openMediaPicker(el){
+  currentMediaTarget = el;
+  const isVideo = el.dataset.media==='video';
+  document.getElementById('mediaPickerTitle').textContent = isVideo ? 'Change video' : 'Change photo';
+  document.getElementById('mediaFile').accept = isVideo ? 'video/*' : 'image/*';
+  document.getElementById('mediaDropHint').textContent = isVideo
+    ? 'MP4 · WEBM up to 200 MB — stored in the cloud'
+    : 'JPG · PNG · WEBP · GIF up to 15 MB — stored in the cloud';
+  document.getElementById('mediaUrl').value = '';
+  document.getElementById('mediaFile').value = '';
+  setMediaTab('upload');
+  document.getElementById('mediaPicker').classList.add('show');
+}
+function closeMediaPicker(){
+  document.getElementById('mediaPicker').classList.remove('show');
+  currentMediaTarget = null;
+}
+function setMediaTab(name){
+  currentMediaTab = name;
+  document.querySelectorAll('.media-tab').forEach(b=>b.classList.toggle('active', b.dataset.mtab===name));
+  document.getElementById('mediaTabUpload').style.display = name==='upload' ? 'block' : 'none';
+  document.getElementById('mediaTabUrl').style.display = name==='url' ? 'block' : 'none';
+}
+/* ---------- Cloud upload (chunked, bypasses proxy limits) ---------- */
+async function uploadToCloud(file, onProgress){
+  const API = location.origin;
+  const headers = {'Authorization': 'Bearer '+getToken()};
+  const initR = await fetch(API+'/api/media/upload/init',{
+    method:'POST',
+    headers:Object.assign({'Content-Type':'application/json'}, headers),
+    body:JSON.stringify({filename:file.name, content_type:file.type||'application/octet-stream'})
+  });
+  if(initR.status===401) throw new Error('Wrong upload password');
+  if(!initR.ok) throw new Error('Upload init failed');
+  const {upload_id} = await initR.json();
+  const CHUNK = 1024*1024;
+  const total = Math.max(1, Math.ceil(file.size/CHUNK));
+  for(let i=0;i<total;i++){
+    const fd = new FormData();
+    fd.append('upload_id', upload_id);
+    fd.append('index', i);
+    fd.append('chunk', file.slice(i*CHUNK,(i+1)*CHUNK));
+    const r = await fetch(API+'/api/media/upload/chunk',{method:'POST',headers,body:fd});
+    if(!r.ok) throw new Error('Upload interrupted');
+    if(onProgress) onProgress(Math.round(((i+1)/total)*100));
+  }
+  const doneR = await fetch(API+'/api/media/upload/complete',{
+    method:'POST',
+    headers:Object.assign({'Content-Type':'application/json'}, headers),
+    body:JSON.stringify({upload_id, total_chunks: total})
+  });
+  if(!doneR.ok) throw new Error('Upload finalize failed');
+  const d = await doneR.json();
+  return API + d.url;
+}
+async function saveMediaFromPicker(){
+  if(!currentMediaTarget) return;
+  const mid = currentMediaTarget.dataset.mid;
+  let src = null;
+  if(currentMediaTab==='upload'){
+    const f = document.getElementById('mediaFile').files[0];
+    if(!f){ showToast('Pick a file first'); return; }
+    const isVideo = currentMediaTarget.dataset.media==='video';
+    const limitMB = isVideo ? 200 : 15;
+    if(f.size > limitMB * 1024 * 1024){ showToast('File too large (>'+limitMB+' MB)'); return; }
+    const hint = document.getElementById('mediaDropHint');
+    const saveBtn = document.getElementById('btnMediaSave');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'UPLOADING…';
+    try{
+      src = await uploadToCloud(f, p=>{ hint.textContent = 'Uploading to cloud… '+p+'%'; });
+    }catch(e){
+      showToast(e.message||'Upload failed');
+      saveBtn.disabled = false; saveBtn.textContent = 'SAVE';
+      hint.textContent = 'Upload failed — try again';
+      return;
+    }
+    saveBtn.disabled = false; saveBtn.textContent = 'SAVE';
+  } else {
+    src = document.getElementById('mediaUrl').value.trim();
+    if(!src){ showToast('Paste a URL'); return; }
+  }
+  const store = getMediaStore();
+  store[mid] = src;
+  if(setMediaStore(store)){
+    applyMedia(mid, src);
+    showToast('Media saved');
+    closeMediaPicker();
+  }
+}
+function removeMediaFromPicker(){
+  if(!currentMediaTarget) return;
+  clearMedia(currentMediaTarget.dataset.mid);
+  showToast('Media removed');
+  closeMediaPicker();
+}
+
+/* =========================================================
+   ADMIN LOGIN
+   ========================================================= */
+function getToken(){try{return sessionStorage.getItem(LS.token)||'';}catch(e){return '';}}
+function authHeaders(extra){return Object.assign({'Authorization':'Bearer '+getToken()}, extra||{});}
+function isLoggedIn(){return !!getToken();}
+function openAdminLogin(){
+  if(isLoggedIn()){openAdmin();return;}
+  const modal = document.getElementById('adminLogin');
+  modal.classList.add('show');
+  setTimeout(()=>document.getElementById('adminPassInput').focus(),100);
+}
+function closeAdminLogin(){
+  document.getElementById('adminLogin').classList.remove('show');
+  document.getElementById('adminPassInput').value='';
+  document.getElementById('adminErr').textContent='';
+}
+async function submitAdminLogin(){
+  const v = document.getElementById('adminPassInput').value;
+  const errEl = document.getElementById('adminErr');
+  errEl.textContent = 'Checking…';
+  try{
+    const r = await fetch(location.origin+'/api/admin/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:v})
+    });
+    if(r.status===429){ errEl.textContent = 'Too many attempts. Wait 15 minutes.'; return; }
+    if(!r.ok){ errEl.textContent = 'Wrong password.'; return; }
+    const d = await r.json();
+    try{sessionStorage.setItem(LS.token, d.token);}catch(e){}
+    closeAdminLogin();
+    openAdmin();
+  }catch(e){
+    errEl.textContent = 'Server unreachable. Try again.';
+  }
+}
+function openAdmin(){
+  document.getElementById('adminPanel').classList.add('show');
+  renderCountryList();
+  updateBlockedCount();
+  syncBlockedFromServer();
+}
+function closeAdmin(){
+  document.getElementById('adminPanel').classList.remove('show');
+  if(editMode) toggleEditMode();
+}
+function logoutAdmin(){
+  try{sessionStorage.removeItem(LS.token);}catch(e){}
+  closeAdmin();
+  showToast('Logged out');
+}
+function switchTab(name){
+  document.querySelectorAll('.admin-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.toggle('active', s.dataset.section===name));
+  if(name==='stats') loadStats();
+  if(name==='requests') loadRequests();
+  if(name==='geo') syncBlockedFromServer();
+}
+async function loadRequests(){
+  const list = document.getElementById('reqList');
+  const err = document.getElementById('reqErr');
+  const cnt = document.getElementById('reqCount');
+  err.style.display='none';
+  try{
+    const r = await fetch(location.origin+'/api/bookings',{headers:authHeaders()});
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    cnt.textContent = d.items.length ? (d.new_count+' new · '+d.items.length+' total') : 'No requests yet';
+    list.innerHTML = d.items.map(b=>{
+      const when = new Date(b.created_at).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      return '<div class="req-card '+(b.status==='new'?'unread':'')+'" data-id="'+b.id+'">'
+        + '<div class="req-top"><span class="req-name">'+esc(b.name)+'</span><span class="req-time">'+when+'</span></div>'
+        + '<div class="req-meta">'+esc(b.session_type)+(b.mode?' · '+esc(b.mode):'')+' · '+esc(b.channel)+' → <b>'+esc(b.handle)+'</b></div>'
+        + (b.preferred?'<div class="req-meta">Prefers: '+esc(b.preferred)+'</div>':'')
+        + '<div class="req-msg">'+esc(b.message)+'</div>'
+        + '<div class="req-actions">'
+        + (b.status==='new'?'<button class="req-btn done" data-act="done">✓ Mark handled</button>':'<span class="req-handled">Handled</span>')
+        + '<button class="req-btn del" data-act="del">Delete</button>'
+        + '</div></div>';
+    }).join('');
+    list.querySelectorAll('.req-btn').forEach(btn=>{
+      btn.onclick = async ()=>{
+        const id = btn.closest('.req-card').dataset.id;
+        const act = btn.dataset.act;
+        try{
+          if(act==='del'){
+            if(!confirm('Delete this request?')) return;
+            await fetch(location.origin+'/api/bookings/'+id,{method:'DELETE',headers:authHeaders()});
+          } else {
+            await fetch(location.origin+'/api/bookings/'+id+'/status',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({status:'handled'})});
+          }
+          loadRequests();
+        }catch(e){showToast('Action failed')}
+      };
+    });
+  }catch(e){
+    cnt.textContent='—';
+    err.style.display='block';
+  }
+}
+function esc(s){
+  return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+async function loadStats(){
+  const err = document.getElementById('statsErr');
+  err.style.display='none';
+  try{
+    const r = await fetch(location.origin+'/api/visits/stats',{headers:authHeaders()});
+    if(r.status===401){
+      err.textContent = "Couldn't load stats — password doesn't match the server. Re-set it in Settings.";
+      err.style.display='block';
+      return;
+    }
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    document.getElementById('statToday').textContent = d.today;
+    document.getElementById('statWeek').textContent = d.week;
+    document.getElementById('statAll').textContent = d.all_time;
+    const cs = document.getElementById('countryStats');
+    if(d.countries && d.countries.length){
+      const max = d.countries[0].count;
+      cs.innerHTML = d.countries.map(c=>{
+        const name = (COUNTRIES.find(x=>x[0]===c.code)||[])[1] || c.code;
+        const pct = Math.max(6, Math.round((c.count/max)*100));
+        return '<div class="cstat-row"><span class="cstat-name">'+name+'</span>'
+             + '<span class="cstat-bar"><i style="width:'+pct+'%"></i></span>'
+             + '<span class="cstat-n">'+c.count+'</span></div>';
+      }).join('');
+    } else {
+      cs.innerHTML = '<div class="admin-tip">No country data yet.</div>';
+    }
+  }catch(e){
+    err.textContent = "Couldn't load stats — backend unreachable.";
+    err.style.display='block';
+  }
+}
+async function changePassword(){
+  const cur = document.getElementById('curPass').value;
+  const v = document.getElementById('newPass').value.trim();
+  if(v.length<4){showToast('New password too short');return;}
+  if(!cur){showToast('Enter your current password');return;}
+  try{
+    const r = await fetch(location.origin+'/api/admin/password',{
+      method:'POST',
+      headers:authHeaders({'Content-Type':'application/json'}),
+      body:JSON.stringify({current:cur, new:v})
+    });
+    if(r.status===401){showToast('Wrong current password');return;}
+    if(!r.ok){showToast('Server error — try again');return;}
+    document.getElementById('curPass').value='';
+    document.getElementById('newPass').value='';
+    showToast('Password updated');
+  }catch(e){
+    showToast('Backend unreachable — password unchanged');
+  }
+}
+
+/* =========================================================
+   COUNTRY BLOCK
+   ========================================================= */
+function getBlocked(){try{return JSON.parse(localStorage.getItem(LS.blocked)||'[]')}catch(e){return []}}
+function setBlocked(list){try{localStorage.setItem(LS.blocked, JSON.stringify(list))}catch(e){}}
+async function syncBlockedFromServer(){
+  try{
+    const r = await fetch(location.origin+'/api/blocked-countries',{cache:'no-store'});
+    if(r.ok){ const d = await r.json(); setBlocked(d.countries||[]); renderCountryList(); updateBlockedCount(); }
+  }catch(e){}
+}
+async function toggleBlocked(code){
+  const b = getBlocked();
+  const i = b.indexOf(code);
+  if(i>=0) b.splice(i,1); else b.push(code);
+  setBlocked(b);
+  renderCountryList();
+  updateBlockedCount();
+  try{
+    const r = await fetch(location.origin+'/api/blocked-countries',{
+      method:'POST',
+      headers:authHeaders({'Content-Type':'application/json'}),
+      body:JSON.stringify({countries:b})
+    });
+    if(r.status===401){ showToast('Not saved — password out of sync'); return; }
+    if(!r.ok){ showToast('Not saved — server error'); return; }
+    showToast(i>=0?'Unblocked — live for visitors':'Blocked — live for visitors');
+  }catch(e){ showToast('Saved on this device only — backend offline'); }
+}
+function updateBlockedCount(){
+  const n = getBlocked().length;
+  const el = document.getElementById('blockedCount');
+  if(el) el.textContent = n+' '+(n===1?'country':'countries')+' blocked';
+}
+function renderCountryList(){
+  const searchEl = document.getElementById('countrySearch');
+  const listEl = document.getElementById('countryList');
+  if(!listEl) return;
+  const q = (searchEl?searchEl.value:'').toLowerCase();
+  const blocked = getBlocked();
+  const list = COUNTRIES.filter(c=>c[1].toLowerCase().includes(q)||c[0].toLowerCase().includes(q));
+  listEl.innerHTML = list.map(([code,name])=>{
+    const isB = blocked.includes(code);
+    return '<div class="country-row '+(isB?'blocked':'')+'" data-code="'+code+'">'
+         + '<span>'+name+'</span>'
+         + '<span class="code">'+(isB?'× BLOCKED':code)+'</span>'
+         + '</div>';
+  }).join('') || '<div style="padding:20px;color:var(--dim);text-align:center;font-size:12px">No matches</div>';
+  listEl.querySelectorAll('.country-row').forEach(r=>{
+    r.addEventListener('click',()=>toggleBlocked(r.dataset.code));
+  });
+}
+async function enforceGeoBlock(){
+  if(isLoggedIn()) return;
+  let blocked = [];
+  try{
+    const r = await fetch(location.origin+'/api/blocked-countries',{cache:'no-store'});
+    if(r.ok){ const d = await r.json(); blocked = d.countries||[]; }
+    else blocked = getBlocked();
+  }catch(e){ blocked = getBlocked(); }
+  if(!blocked.length) return;
+  try{
+    const r = await fetch(location.origin+'/api/geo', {cache:'no-store'});
+    const d = await r.json();
+    const code = (d.country_code||'').toUpperCase();
+    if(code && blocked.includes(code)){
+      const name = (COUNTRIES.find(c=>c[0]===code)||[])[1] || code;
+      const cEl = document.getElementById('geoCountry');
+      if(cEl) cEl.textContent = name;
+      restrictSensitive();
+    }
+  }catch(e){}
+}
+
+/* Apply country privacy: hide escort / in-person tells, remove in-person options */
+function restrictSensitive(){
+  document.body.classList.add('geo-blur');
+  document.querySelectorAll('select option').forEach(opt=>{
+    if(/in person/i.test(opt.textContent)) opt.remove();
+  });
+}
+window.enforceGeoBlock = enforceGeoBlock;
+window.restrictSensitive = restrictSensitive;
+
+/* =========================================================
+   EXPORT (bakes edits + media + blocklist + password into ONE file)
+   ========================================================= */
+async function exportSite(){
+  // Snapshot base HTML (before admin injection). We take current index HTML
+  // and strip the admin-injected nodes, then inline admin.css + admin.js.
+  const clone = document.documentElement.cloneNode(true);
+  ['adminPanel','adminLogin','adminToast','geoBlock','mediaPicker'].forEach(id=>{
+    const n = clone.querySelector('#'+id);
+    if(n) n.remove();
+  });
+  // Strip runtime helpers
+  clone.querySelectorAll('.media-edit-btn').forEach(n=>n.remove());
+  clone.querySelectorAll('[data-edit]').forEach(el=>{
+    el.removeAttribute('contenteditable');
+    el.removeAttribute('data-edit');
+  });
+  clone.querySelectorAll('[data-media]').forEach(el=>{
+    el.classList.remove('has-media');
+    // keep data-media and data-mid so imported file rewires media
+  });
+  const body = clone.querySelector('body');
+  if(body) body.className = '';
+
+  // Fetch admin.css + admin.js and inline them
+  let adminCss='', adminJs='';
+  try{
+    adminCss = await (await fetch('admin.css')).text();
+    adminJs  = await (await fetch('admin.js')).text();
+  }catch(e){}
+
+  const head = clone.querySelector('head');
+  const linkNode = head && head.querySelector('link[href="admin.css"]');
+  if(linkNode) linkNode.remove();
+  const scriptRef = clone.querySelector('script[src="admin.js"]');
+  if(scriptRef) scriptRef.remove();
+
+  if(head){
+    const styleEl = clone.ownerDocument.createElement('style');
+    styleEl.textContent = adminCss;
+    head.appendChild(styleEl);
+  }
+
+  // Bake current state into a boot script (runs before admin.js so values pre-seed localStorage)
+  const stateBoot = `
+<script>
+(function(){try{
+  var K={content:'candice_content',media:'candice_media',links:'candice_links',blocked:'candice_blocked_countries'};
+  if(!localStorage.getItem(K.blocked)) localStorage.setItem(K.blocked, ${JSON.stringify(localStorage.getItem(LS.blocked)||'[]')});
+  if(!localStorage.getItem(K.content)) localStorage.setItem(K.content, ${JSON.stringify(localStorage.getItem(LS.content)||'{}')});
+  if(!localStorage.getItem(K.media))   localStorage.setItem(K.media,   ${JSON.stringify(localStorage.getItem(LS.media)||'{}')});
+  if(!localStorage.getItem(K.links))   localStorage.setItem(K.links,   ${JSON.stringify(localStorage.getItem(LS.links)||'{}')});
+}catch(e){}})();
+<\/script>`;
+
+  const inlineAdmin = `<script>${adminJs}<\/script>`;
+
+  let html = '<!doctype html>\n' + clone.outerHTML;
+  html = html.replace('</body>', stateBoot + inlineAdmin + '</body>');
+
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'index.html';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Exported index.html');
+}
+
+/* =========================================================
+   BOOTSTRAP
+   ========================================================= */
+function bindHandlers(){
+  document.getElementById('btnAdminCancel').onclick = closeAdminLogin;
+  document.getElementById('btnAdminEnter').onclick  = submitAdminLogin;
+  document.getElementById('btnAdminClose').onclick  = closeAdmin;
+  document.getElementById('btnResetText').onclick   = resetContent;
+  document.getElementById('btnResetMedia').onclick  = resetMedia;
+  document.getElementById('btnSavePass').onclick    = changePassword;
+  document.getElementById('btnLogout').onclick      = logoutAdmin;
+  document.getElementById('btnExport').onclick      = exportSite;
+  document.getElementById('editStatus').onclick     = toggleEditMode;
+  document.getElementById('countrySearch').oninput  = renderCountryList;
+
+  const pvBtn = document.getElementById('btnPreviewGeo');
+  if(pvBtn) pvBtn.onclick = () => {
+    const on = document.body.classList.toggle('geo-blur');
+    pvBtn.textContent = on ? '✕ Exit preview' : '👁 Preview as blocked country';
+    pvBtn.classList.toggle('active', on);
+  };
+
+  document.querySelectorAll('.admin-tab').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+  document.querySelectorAll('.media-tab').forEach(b=>b.onclick=()=>setMediaTab(b.dataset.mtab));
+
+  document.getElementById('btnMediaCancel').onclick = closeMediaPicker;
+  document.getElementById('btnMediaSave').onclick   = saveMediaFromPicker;
+  document.getElementById('btnMediaRemove').onclick = removeMediaFromPicker;
+
+  const drop = document.getElementById('mediaDrop');
+  const file = document.getElementById('mediaFile');
+  drop.addEventListener('click',(e)=>{if(e.target.tagName!=='INPUT'){file.click();}});
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('dragover');}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('dragover');}));
+  drop.addEventListener('drop',e=>{
+    const f = e.dataTransfer.files[0];
+    if(f){file.files = e.dataTransfer.files;}
+  });
+
+  document.getElementById('adminPassInput').addEventListener('keydown',e=>{
+    if(e.key==='Enter') submitAdminLogin();
+    if(e.key==='Escape') closeAdminLogin();
+  });
+}
+
+function init(){
+  injectAdminHTML();
+  bindHandlers();
+  tagEditable();
+  tagMedia();
+  tagLinks();
+  loadContent();
+  loadMedia();
+  loadLinks();
+  enforceGeoBlock();
+  document.addEventListener('click', handleLinkEditClick, true);
+
+  // Keyboard trigger
+  document.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey) && e.shiftKey && (e.key==='K'||e.key==='k')){
+      e.preventDefault();
+      openAdminLogin();
+    }
+  });
+  // URL hash trigger
+  if(location.hash==='#backstage'){
+    history.replaceState(null,'',location.pathname);
+    setTimeout(openAdminLogin, 400);
+  }
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+</script></body></html>
