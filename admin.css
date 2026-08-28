@@ -24,7 +24,18 @@ body.geo-blocked > *:not(.geo-block){display:none !important}
 body.geo-blur [data-restrict]{
   display:none !important;
 }
+/* ---------- Blur all gallery photos in blocked countries ---------- */
+/* Keeps the page visible while making uploaded photos unreadable. */
+body.geo-blur [data-media="image"] .injected-media{
+  filter:blur(25px);
+  transform:scale(1.04);
+  transition:filter .25s ease;
+}
 
+/* Keep the photo tile itself visible */
+body.geo-blur [data-media="image"]{
+  overflow:hidden;
+}
 body.geo-blur .geo-blur-banner{display:flex}
 .geo-blur-banner{
   display:none;position:fixed;left:0;right:0;bottom:0;z-index:500;
