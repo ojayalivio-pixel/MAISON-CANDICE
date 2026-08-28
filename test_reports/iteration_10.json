@@ -1,0 +1,21 @@
+{
+  "summary": "Re-verified geo-block fix incl. NEW backend /api/geo endpoint. Backend: GET /api/geo returns 200 JSON with X-Forwarded-For 8.8.8.8→US and 212.58.244.20→GB (server-side ip-api.com lookup, first IP in XFF used). GET/POST /api/blocked-countries still correct (public GET 200; POST 401 no-auth & wrong-pass; POST 200 candice2026 normalizes upper/dedup/sorted). Full real-flow (no mocking): fetched /api/geo from the preview browser → detected US; POST blocklist=['US']; cleared localStorage+sessionStorage; called window.enforceGeoBlock() → body.geo-blur set, #travel .location computed filter == 'blur(12px)', banner [data-testid=geo-blur-banner] display=='flex', localStorage 'candice_blocked_countries' remained null (both country AND blocklist sourced from backend). Non-blocked path with server=['ZZ'] → no blur. Empty regression → no blur, banner hidden. Admin UI round-trip: Ctrl+Shift+K → candice2026 → COUNTRIES tab; clicking .country-row[data-code=US] POSTs to server (GET reflects ['US']) and unblocks back to []. Preview button [data-testid=preview-blocked-btn] toggles body.geo-blur on/off. Admin (logged in) is exempt from enforceGeoBlock even when server list contains their own country. Stats GET /api/visits/stats returned 200 with candice2026. Server blocked_countries reset to [] at end. Admin password unchanged.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "/api/geo uses http://ip-api.com (plain HTTP) with a 4s timeout and swallows all exceptions returning empty strings. Failure-open is fine for this UX but note: if ip-api.com is unreachable/rate-limited (45 req/min free tier per source IP), all visitors get empty country_code and enforceGeoBlock silently no-ops. Consider a fallback provider or short in-memory cache keyed by IP.",
+    "/api/geo splits X-Forwarded-For and trusts the first IP unconditionally — spoofable by a client sending its own X-Forwarded-For header directly (the ingress may or may not overwrite). For a country-block that's cosmetic (blur) this is acceptable, but worth documenting.",
+    "toggleBlocked() still updates local state before the POST resolves (iteration 9 comment still applies).",
+    "restrictSensitive() still only strips <option> matching /in person/i — regex centralization suggestion still applies."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (all curl assertions: /api/geo XFF→US, XFF→GB, /api/blocked-countries GET/POST auth matrix + normalize + reset)", "frontend": "100% (blocked real-flow, non-blocked, empty regression, admin UI row round-trip, preview toggle, admin exempt, stats 200)"},
+  "test_credentials": "Backstage/admin pass: candice2026. Login via Ctrl+Shift+K → #adminPassInput. NOT changed.",
+  "seed_data_creation": "Temporarily set blocked_countries to ['US'], ['ZZ'], and admin-round-trip ['US']. FINAL state verified [] (reset).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Country row selector in admin countries tab is '.country-row[data-code=XX]' (NOT data-country). Preview button data-testid=preview-blocked-btn only visible on data-tab='geo'. /api/geo respects first IP in X-Forwarded-For for testing arbitrary countries. Blocked list normalization: upper, dedup, sorted, 2-char, max 300.",
+  "rca of the issue": "Original bug (blocklist per-device localStorage) was fixed in iter 9. New bug found by main agent: enforceGeoBlock's browser-side ipapi.co call was CORS-blocked ('Failed to fetch'), so country never resolved for real visitors. Fix (verified this iteration): added GET /api/geo backend endpoint (server-side ip-api.com lookup using X-Forwarded-For) and both admin.js enforceGeoBlock() and index.html visit-ping now call location.origin+'/api/geo'. Everything is now server-sourced; end-to-end blur works with cleared localStorage."
+}

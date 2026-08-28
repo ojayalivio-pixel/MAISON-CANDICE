@@ -1914,7 +1914,7 @@ footer{
     var send = function(cc){
       fetch(location.origin+'/api/visits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vid:vid,country:cc||null})}).catch(function(){});
     };
-    fetch('https://ipapi.co/json/').then(function(r){return r.json()}).then(function(d){send(d.country_code)}).catch(function(){send(null)});
+    fetch(location.origin+'/api/geo').then(function(r){return r.json()}).then(function(d){send(d.country_code)}).catch(function(){send(null)});
   }catch(e){}
 })();
 

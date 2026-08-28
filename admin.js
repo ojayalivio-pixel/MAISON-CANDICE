@@ -506,6 +506,7 @@ function openAdmin(){
   document.getElementById('adminPanel').classList.add('show');
   renderCountryList();
   updateBlockedCount();
+  syncBlockedFromServer();
 }
 function closeAdmin(){
   document.getElementById('adminPanel').classList.remove('show');
@@ -521,6 +522,7 @@ function switchTab(name){
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.toggle('active', s.dataset.section===name));
   if(name==='stats') loadStats();
   if(name==='requests') loadRequests();
+  if(name==='geo') syncBlockedFromServer();
 }
 async function loadRequests(){
   const list = document.getElementById('reqList');
@@ -626,14 +628,29 @@ async function changePassword(){
    ========================================================= */
 function getBlocked(){try{return JSON.parse(localStorage.getItem(LS.blocked)||'[]')}catch(e){return []}}
 function setBlocked(list){try{localStorage.setItem(LS.blocked, JSON.stringify(list))}catch(e){}}
-function toggleBlocked(code){
+async function syncBlockedFromServer(){
+  try{
+    const r = await fetch(location.origin+'/api/blocked-countries',{cache:'no-store'});
+    if(r.ok){ const d = await r.json(); setBlocked(d.countries||[]); renderCountryList(); updateBlockedCount(); }
+  }catch(e){}
+}
+async function toggleBlocked(code){
   const b = getBlocked();
   const i = b.indexOf(code);
   if(i>=0) b.splice(i,1); else b.push(code);
   setBlocked(b);
   renderCountryList();
   updateBlockedCount();
-  showToast(i>=0?'Unblocked':'Blocked');
+  try{
+    const r = await fetch(location.origin+'/api/blocked-countries',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Admin-Pass':getPass()},
+      body:JSON.stringify({countries:b})
+    });
+    if(r.status===401){ showToast('Not saved — password out of sync'); return; }
+    if(!r.ok){ showToast('Not saved — server error'); return; }
+    showToast(i>=0?'Unblocked — live for visitors':'Blocked — live for visitors');
+  }catch(e){ showToast('Saved on this device only — backend offline'); }
 }
 function updateBlockedCount(){
   const n = getBlocked().length;
@@ -659,11 +676,16 @@ function renderCountryList(){
   });
 }
 async function enforceGeoBlock(){
-  const blocked = getBlocked();
-  if(blocked.length===0) return;
   if(isLoggedIn()) return;
+  let blocked = [];
   try{
-    const r = await fetch('https://ipapi.co/json/', {cache:'no-store'});
+    const r = await fetch(location.origin+'/api/blocked-countries',{cache:'no-store'});
+    if(r.ok){ const d = await r.json(); blocked = d.countries||[]; }
+    else blocked = getBlocked();
+  }catch(e){ blocked = getBlocked(); }
+  if(!blocked.length) return;
+  try{
+    const r = await fetch(location.origin+'/api/geo', {cache:'no-store'});
     const d = await r.json();
     const code = (d.country_code||'').toUpperCase();
     if(code && blocked.includes(code)){

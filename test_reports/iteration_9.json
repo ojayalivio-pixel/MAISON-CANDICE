@@ -1,0 +1,21 @@
+{
+  "summary": "Verified server-side blocked-countries fix (bug: blocklist previously in per-device localStorage). Backend endpoints tested via curl (GET public 200, POST 401 without/with wrong pass, POST 200 with X-Admin-Pass candice2026, normalized/deduped/sorted uppercase). Frontend integration tested via Playwright: (1) fresh visitor with cleared localStorage + monkeypatched ipapi returning US gets body.geo-blur, #travel .location filter blur(12px), banner display:flex — proving list comes from server not localStorage; (2) FR visitor with server list=['US'] NOT blurred; (3) admin (isLoggedIn) exempted from enforceGeoBlock; (4) preview button [data-testid=preview-blocked-btn] toggles blur on/off; (5) admin round-trip via UI: clicking United States row POSTs to backend (server GET returns ['US']), unblocking returns []; (6) regression: empty server list = no blur, banner hidden. Server list reset to [] at end.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "enforceGeoBlock() silently catches ipapi.co CORS/network failures (documented as failure-open). In this preview env ipapi.co is CORS-blocked from browser origin, meaning boot-time enforceGeoBlock always fails to detect country for real visitors here. Not a bug in the blocklist fix, but worth noting: production may need a server-side geo-lookup or a CORS-friendly IP service if reliability matters.",
+    "toggleBlocked() updates local state and localStorage BEFORE the POST resolves, and only shows an error toast on failure — the local cache can diverge from the server if the POST fails. Consider syncing back from server on non-OK response.",
+    "restrictSensitive() still only strips <option> matching /in person/i — same regex-centralization comment as iteration 8 still applies.",
+    "getBlocked()/setBlocked() localStorage cache is now only a fallback for backend-down scenarios; consider clearing it on successful server sync to reduce risk of stale-cache confusion for developers."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (6/6 curl assertions: GET public 200, POST no-auth 401, POST wrong-pass 401, POST valid 200 + normalize FR/PH/US, GET reflects saved, reset to [])", "frontend": "100% (6/6 scenarios: US blocked visitor blur, FR not blurred, admin exempt, preview toggle, admin round-trip via UI, empty-list regression)"},
+  "test_credentials": "Backstage/admin pass: candice2026. Login via Ctrl+Shift+K → #adminPassInput. NOT changed.",
+  "seed_data_creation": "Server 'blocked_countries' setting toggled to ['US'] and then reset to [] during tests. Final state verified empty [].",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "KEY assertion proven: with localStorage.clear() (candice_blocked_countries=null) and server list=['US'], monkeypatched ipapi returning US → body.geo-blur added, blur(12px) applied to [data-restrict], banner shows. This confirms fix: blocklist now sourced from backend, not per-device localStorage. Preview button [data-testid=preview-blocked-btn] is only rendered on the COUNTRIES tab (.admin-tab[data-tab='geo']) — must switch tab before clicking. syncBlockedFromServer() runs on openAdmin() and on switchTab('geo'). Admin UI toggleBlocked() POSTs to /api/blocked-countries with X-Admin-Pass header from getPass() (localStorage candice_admin_pass, defaults to candice2026). Blur CSS is filter:blur(12px)!important on body.geo-blur [data-restrict].",
+  "rca of the issue": "Original bug: blocked-country list was per-device (localStorage 'candice_blocked_countries'), so real visitors' browsers always had an empty list. Admin's block choices never propagated. Fix (verified): new backend endpoints GET/POST /api/blocked-countries backed by db.settings key 'blocked_countries'; enforceGeoBlock fetches from server (localStorage only as offline fallback); toggleBlocked persists to server; openAdmin and switchTab('geo') sync from server. Verified end-to-end that a browser with NULL localStorage still gets blurred when its ipapi country_code matches the server list."
+}

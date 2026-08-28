@@ -8,7 +8,7 @@ from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
-from fastapi import APIRouter, FastAPI, File, Form, Header, HTTPException, UploadFile
+from fastapi import APIRouter, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -209,6 +209,45 @@ async def change_password(body: PasswordBody):
         {"key": "admin_pass"}, {"$set": {"value": body.new.strip()}}, upsert=True
     )
     return {"ok": True}
+
+
+class BlockedBody(BaseModel):
+    countries: list[str] = []
+
+
+@api.get("/blocked-countries")
+async def get_blocked_countries():
+    doc = await db.settings.find_one({"key": "blocked_countries"})
+    return {"countries": doc["value"] if doc else []}
+
+
+@api.post("/blocked-countries")
+async def set_blocked_countries(body: BlockedBody, x_admin_pass: str = Header(None)):
+    await check_pass(x_admin_pass)
+    codes = sorted({c.strip().upper()[:2] for c in body.countries if c and c.strip()})[:300]
+    await db.settings.update_one(
+        {"key": "blocked_countries"}, {"$set": {"value": codes}}, upsert=True
+    )
+    return {"ok": True, "countries": codes}
+
+
+@api.get("/geo")
+async def geo(request: Request):
+    xff = request.headers.get("x-forwarded-for", "")
+    ip = xff.split(",")[0].strip() if xff else (request.client.host if request.client else "")
+    cc = ""
+    country = ""
+    try:
+        target = f"http://ip-api.com/json/{ip}?fields=status,countryCode,country" if ip else "http://ip-api.com/json/?fields=status,countryCode,country"
+        r = requests.get(target, timeout=4)
+        d = r.json()
+        if d.get("status") == "success":
+            cc = (d.get("countryCode") or "").upper()
+            country = d.get("country") or ""
+    except Exception:
+        pass
+    return {"country_code": cc, "country": country}
+
 
 
 @api.post("/media/upload/init")
