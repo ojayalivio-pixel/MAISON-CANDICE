@@ -1,0 +1,90 @@
+{
+  "summary": "Verified SEC-002 (static server allowlist) and SEC-003 (upload type restriction + nosniff). 26/26 pytest cases pass on the public preview URL. Frontend homepage renders normally and Backstage opens with all 5 tabs (EDIT/REQUESTS/STATS/COUNTRIES/SETTINGS) using password candice2026.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_security_fixes.py",
+    "/app/test_reports/pytest/security_results.xml"
+  ],
+  "verification_details": {
+    "SEC-002_secret_leak_closed": {
+      "status": "PASS",
+      "paths_tested": [
+        "/backend/.env -> 200 text/html (index.html fallback, no MONGO_URL)",
+        "/backend/server.py -> 200 text/html fallback",
+        "/memory/test_credentials.md -> 200 text/html fallback",
+        "/memory/PRD.md -> 200 text/html fallback",
+        "/frontend/server.js -> 200 text/html fallback",
+        "/.env -> 200 text/html fallback",
+        "/package.json -> 200 text/html fallback",
+        "/admin.js.map -> 200 text/html fallback",
+        "/backend/%2e%2e/.env -> 200 fallback",
+        "/..%2f..%2fbackend/.env -> 400 (ingress rejects, no leak)",
+        "/%2e%2e/backend/.env -> 400 (ingress rejects, no leak)"
+      ],
+      "notes": "No response body contained MONGO_URL, EMERGENT_LLM_KEY, or ADMIN_UPLOAD_PASS. Response body for /backend/.env is HTML, not env content."
+    },
+    "SEC-002_regression_assets": {
+      "status": "PASS",
+      "assets": [
+        "/ -> 200 text/html",
+        "/admin.js -> 200 application/javascript",
+        "/admin.css -> 200 text/css",
+        "/favicon.svg -> 200 image/svg+xml",
+        "/favicon.png -> 200 image/png",
+        "/og-image.jpg -> 200 image/jpeg"
+      ]
+    },
+    "SEC-003_upload_type_restriction": {
+      "status": "PASS",
+      "html_upload": "POST /api/media/upload/complete with content_type=text/html -> 415 'Only image or video files are allowed'",
+      "image_upload": "1x1 JPEG image/jpeg -> 200 with id + /api/media/file/{id} URL",
+      "nosniff_header": "GET /api/media/file/{id} returned X-Content-Type-Options: nosniff and CSP sandbox headers"
+    },
+    "api_regression": {
+      "status": "PASS",
+      "endpoints": [
+        "GET /api/health -> 200",
+        "GET /api/blocked-countries -> 200",
+        "GET /api/visits/stats without pass -> 401",
+        "GET /api/visits/stats with candice2026 -> 200",
+        "GET /api/bookings without pass -> 401",
+        "POST /api/media/upload/init without pass -> 401",
+        "POST /api/media/upload/init with wrong pass -> 401",
+        "POST /api/media/upload/init with candice2026 -> 200"
+      ]
+    },
+    "frontend_ui": {
+      "homepage_renders": true,
+      "backstage_opens_ctrl_shift_k": true,
+      "admin_pass_input_found": true,
+      "tabs_visible": ["EDIT", "REQUESTS", "STATS", "COUNTRIES", "SETTINGS"]
+    }
+  },
+  "action_items": [
+    "SEC-001 (client-side admin password hardcoded in admin.js) is intentionally still open pending auth redesign — not verified this round."
+  ],
+  "critical_code_review_comments": [
+    "server.js allowlist implementation is clean: uses path.basename() to flatten user input, preventing traversal. Explicit ALLOWED Set, non-allowlisted paths fall back to index.html. No dotfiles, no directory serving.",
+    "server.py upload_complete correctly rejects non image/video BEFORE storage upload (415).",
+    "serve_file adds both X-Content-Type-Options: nosniff and CSP sandbox — good defense-in-depth against XSS via uploaded HTML.",
+    "Note: media_type in serve_file uses record's stored content_type; combined with the 415 filter at upload time, this is safe.",
+    "Reminder: SEC-001 remains — admin.js contains password check client-side (visible in /admin.js which IS in the allowlist). Any visitor can read it. Auth must be moved server-side."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_security_fixes.py (created)"
+  ],
+  "success_rate": {"backend": "100% (26/26)", "frontend": "100%"},
+  "test_credentials": "Admin pass: candice2026 (from review request; DO NOT change).",
+  "seed_data_creation": "One test JPEG uploaded via /api/media/upload flow to verify nosniff. Small (1x1 px) file; id logged in pytest output. No cleanup performed (no delete endpoint).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Security regression suite at /app/backend/tests/test_security_fixes.py covers SEC-002 (static allowlist + traversal) and SEC-003 (upload 415 + nosniff). Reuse for future security regressions. SEC-001 (client-side admin password in admin.js) is still open by design."
+}

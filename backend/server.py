@@ -290,6 +290,10 @@ async def upload_complete(body: CompleteBody, x_admin_pass: str = Header(None)):
     if len(data) > MAX_SIZE:
         raise HTTPException(status_code=413, detail="File too large")
 
+    ctype = (meta.get("content_type") or "").lower()
+    if not (ctype.startswith("image/") or ctype.startswith("video/")):
+        raise HTTPException(status_code=415, detail="Only image or video files are allowed")
+
     ext = meta["filename"].split(".")[-1].lower() if "." in meta["filename"] else "bin"
     storage_path = f"{APP_NAME}/uploads/{uuid.uuid4()}.{ext}"
     try:
@@ -324,7 +328,12 @@ async def serve_file(file_id: str):
     return Response(
         content=data,
         media_type=record.get("content_type", content_type),
-        headers={"Cache-Control": "public, max-age=86400", "Accept-Ranges": "bytes"},
+        headers={
+            "Cache-Control": "public, max-age=86400",
+            "Accept-Ranges": "bytes",
+            "X-Content-Type-Options": "nosniff",
+            "Content-Security-Policy": "default-src 'none'; sandbox",
+        },
     )
 
 
