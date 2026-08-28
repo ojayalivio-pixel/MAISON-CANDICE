@@ -1743,8 +1743,6 @@ footer{
       <h3 class="serif">Received, <span class="it">darling.</span></h3>
       <p>Your application is in my hands. If you've made the right impression,
          you'll hear from me on your chosen channel. Patience is attractive.</p>
-      <a id="bookingChannelBtn" data-testid="booking-channel-redirect-btn" class="btn primary" href="#" target="_blank" rel="noopener noreferrer" style="display:none;margin-top:22px"><span>Continue on Telegram</span><span class="arrow">→</span></a>
-      <div id="bookingChannelNote" style="display:none;margin-top:10px;font-size:12px;opacity:.65">Opening your channel…</div>
     </div>
   </div>
 </section>
@@ -1969,32 +1967,7 @@ footer{
       });
       if(!r.ok) throw new Error();
       bf.style.display='none';
-      const sc = document.getElementById('bookingSuccess');
-      sc.style.display='block';
-      const CHANNEL_LINKS = {
-        'Telegram':'https://t.me/privatemaisoncandice',
-        'WhatsApp':'https://wa.me/message/46V4TW2E5ASNF1',
-        'Email':'mailto:private@maisoncandice.com?subject=Session%20application%20follow-up',
-        'Viber':'viber://chat?number=%2B971501256913',
-        'Snapchat':'https://snapchat.com/t/OkSSAxsc'
-      };
-      const ch = document.getElementById('bfChannel').value;
-      const url = CHANNEL_LINKS[ch];
-      if(url){
-        const cb = document.getElementById('bookingChannelBtn');
-        cb.href = url;
-        cb.querySelector('span').textContent = 'Continue on '+ch;
-        if(url.indexOf('http')!==0){ cb.removeAttribute('target'); }
-        cb.style.display='inline-flex';
-        document.getElementById('bookingChannelNote').style.display='block';
-        setTimeout(function(){
-          try{
-            if(url.indexOf('http')===0) window.open(url,'_blank','noopener');
-            else location.href = url;
-          }catch(e){}
-        },1800);
-      }
-      sc.scrollIntoView({behavior:'smooth',block:'center'});
+      document.getElementById('bookingSuccess').style.display='block';
     }catch(ex){
       btn.disabled = false;
       err.textContent = 'Something went wrong — please try again in a moment.';

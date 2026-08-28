@@ -517,3 +517,28 @@ body.edit-mode [data-link]:hover{outline-color:var(--crimson-hot)}
 .req-btn.done:hover{border-color:var(--champagne);color:var(--champagne)}
 .req-btn.del:hover{border-color:var(--crimson);color:var(--crimson-hot)}
 .req-handled{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+
+/* ---------- Requests Inbox ---------- */
+.req-controls{display:flex;gap:8px;margin:10px 0}
+.req-controls select{
+  flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  color:var(--cream,#f3e9dc);font-size:11px;padding:8px;border-radius:8px;outline:none
+}
+.req-card{cursor:pointer}
+.req-card .req-top{cursor:pointer}
+.req-card.important{border-color:rgba(244,169,0,.5)}
+.req-badges{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.req-badge{font-size:9px;letter-spacing:.12em;padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.15);opacity:.85}
+.req-badge.st-new{background:rgba(225,29,72,.2);border-color:rgba(225,29,72,.5)}
+.req-badge.st-read{background:rgba(255,255,255,.06)}
+.req-badge.st-pending{background:rgba(244,169,0,.15);border-color:rgba(244,169,0,.4)}
+.req-badge.st-confirmed{background:rgba(37,211,102,.15);border-color:rgba(37,211,102,.4)}
+.req-badge.st-declined{background:rgba(120,120,120,.15)}
+.req-badge.st-completed{background:rgba(42,171,238,.15);border-color:rgba(42,171,238,.4)}
+.req-badge.st-archived{opacity:.5}
+.req-badge.st-important{background:rgba(244,169,0,.25);border-color:#f4a900;color:#ffd766}
+.req-details{margin-top:10px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
+.req-status-sel{
+  flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  color:var(--cream,#f3e9dc);font-size:11px;padding:7px;border-radius:8px;outline:none
+}

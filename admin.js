@@ -113,7 +113,28 @@ function injectAdminHTML(){
 
     <div class="admin-section" data-section="requests">
       <div class="blocked-count" id="reqCount">Loading…</div>
-      <div class="req-list" id="reqList"></div>
+      <input type="text" class="country-search" id="reqSearch" data-testid="requests-search-input" placeholder="Search name, handle, message…">
+      <div class="req-controls">
+        <select id="reqSort" data-testid="requests-sort-select">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="preferred">Preferred date/time</option>
+          <option value="important">Most important first</option>
+          <option value="unread">Unread / new first</option>
+        </select>
+        <select id="reqFilter" data-testid="requests-filter-select">
+          <option value="">All statuses</option>
+          <option value="new">New</option>
+          <option value="read">Read</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="declined">Declined</option>
+          <option value="completed">Completed</option>
+          <option value="archived">Archived</option>
+          <option value="__important">⭐ Important only</option>
+        </select>
+      </div>
+      <div class="req-list" id="reqList" data-testid="requests-inbox-list"></div>
       <div class="admin-tip" id="reqErr" style="display:none;color:var(--crimson-hot)">Couldn't load requests — backend unreachable.</div>
     </div>
 
@@ -538,8 +559,8 @@ function switchTab(name){
   if(name==='requests') loadRequests();
   if(name==='geo') syncBlockedFromServer();
 }
+let reqItems = [];
 async function loadRequests(){
-  const list = document.getElementById('reqList');
   const err = document.getElementById('reqErr');
   const cnt = document.getElementById('reqCount');
   err.style.display='none';
@@ -547,38 +568,108 @@ async function loadRequests(){
     const r = await fetch(MC_BASE()+'/api/bookings',{headers:authHeaders()});
     if(!r.ok) throw new Error();
     const d = await r.json();
-    cnt.textContent = d.items.length ? (d.new_count+' new · '+d.items.length+' total') : 'No requests yet';
-    list.innerHTML = d.items.map(b=>{
-      const when = new Date(b.created_at).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-      return '<div class="req-card '+(b.status==='new'?'unread':'')+'" data-id="'+b.id+'">'
-        + '<div class="req-top"><span class="req-name">'+esc(b.name)+'</span><span class="req-time">'+when+'</span></div>'
-        + '<div class="req-meta">'+esc(b.session_type)+(b.mode?' · '+esc(b.mode):'')+' · '+esc(b.channel)+' → <b>'+esc(b.handle)+'</b></div>'
-        + (b.preferred?'<div class="req-meta">Prefers: '+esc(b.preferred)+'</div>':'')
-        + '<div class="req-msg">'+esc(b.message)+'</div>'
-        + '<div class="req-actions">'
-        + (b.status==='new'?'<button class="req-btn done" data-act="done">✓ Mark handled</button>':'<span class="req-handled">Handled</span>')
-        + '<button class="req-btn del" data-act="del">Delete</button>'
-        + '</div></div>';
-    }).join('');
-    list.querySelectorAll('.req-btn').forEach(btn=>{
-      btn.onclick = async ()=>{
-        const id = btn.closest('.req-card').dataset.id;
-        const act = btn.dataset.act;
-        try{
-          if(act==='del'){
-            if(!confirm('Delete this request?')) return;
-            await fetch(MC_BASE()+'/api/bookings/'+id,{method:'DELETE',headers:authHeaders()});
-          } else {
-            await fetch(MC_BASE()+'/api/bookings/'+id+'/status',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({status:'handled'})});
-          }
-          loadRequests();
-        }catch(e){showToast('Action failed')}
-      };
-    });
+    reqItems = d.items || [];
+    cnt.textContent = reqItems.length ? (d.new_count+' new · '+reqItems.length+' total') : 'No requests yet';
+    renderRequests();
   }catch(e){
     cnt.textContent='—';
     err.style.display='block';
   }
+}
+const REQ_STATUSES = ['new','read','pending','confirmed','declined','completed','archived'];
+function renderRequests(){
+  const list = document.getElementById('reqList');
+  const q = (document.getElementById('reqSearch').value||'').toLowerCase();
+  const sort = document.getElementById('reqSort').value;
+  const filter = document.getElementById('reqFilter').value;
+  let items = reqItems.slice();
+  if(q) items = items.filter(b=>[b.name,b.handle,b.message,b.channel,b.session_type,b.preferred].join(' ').toLowerCase().includes(q));
+  if(filter==='__important') items = items.filter(b=>b.priority==='important');
+  else if(filter) items = items.filter(b=>(b.status||'new')===filter);
+  items.sort((a,b)=>{
+    if(sort==='oldest') return a.created_at<b.created_at?-1:1;
+    if(sort==='preferred') return (a.preferred||'\uffff').localeCompare(b.preferred||'\uffff');
+    if(sort==='important'){
+      const ia=a.priority==='important'?0:1, ib=b.priority==='important'?0:1;
+      if(ia!==ib) return ia-ib;
+    }
+    if(sort==='unread'){
+      const na=(a.status||'new')==='new'?0:1, nb=(b.status||'new')==='new'?0:1;
+      if(na!==nb) return na-nb;
+    }
+    return a.created_at>b.created_at?-1:1;
+  });
+  if(!items.length){ list.innerHTML='<div class="admin-tip">Nothing matches.</div>'; return; }
+  list.innerHTML = items.map(b=>{
+    const st = b.status||'new';
+    const imp = b.priority==='important';
+    const when = new Date(b.created_at).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    return '<div class="req-card '+(st==='new'?'unread':'')+(imp?' important':'')+'" data-id="'+b.id+'" data-testid="request-card">'
+      + '<div class="req-top">'
+      +   '<span class="req-name">'+(imp?'⭐ ':'')+esc(b.name)+'</span>'
+      +   '<span class="req-time">'+when+'</span>'
+      + '</div>'
+      + '<div class="req-meta"><b>'+esc(b.channel)+'</b> → '+esc(b.handle)+'</div>'
+      + '<div class="req-meta">'+esc(b.session_type)+(b.mode?' · '+esc(b.mode):'')+'</div>'
+      + '<div class="req-meta">Preferred: '+(b.preferred?esc(b.preferred):'<i>not given</i>')+'</div>'
+      + '<div class="req-badges"><span class="req-badge st-'+st+'">'+st.toUpperCase()+'</span>'+(imp?'<span class="req-badge st-important">IMPORTANT</span>':'')+'</div>'
+      + '<div class="req-details" style="display:none">'
+      +   '<div class="req-msg">'+esc(b.message)+'</div>'
+      +   '<div class="req-meta">Submitted: '+when+'</div>'
+      +   '<div class="req-actions">'
+      +     '<button class="req-btn" data-act="copy" data-testid="request-copy-handle-btn">⧉ Copy '+esc(b.channel)+' contact</button>'
+      +     '<button class="req-btn" data-act="star" data-testid="request-star-btn">'+(imp?'★ Unmark important':'☆ Mark important')+'</button>'
+      +   '</div>'
+      +   '<div class="req-actions">'
+      +     '<select class="req-status-sel" data-testid="request-status-select">'
+      +       REQ_STATUSES.map(s=>'<option value="'+s+'"'+(s===st?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1)+'</option>').join('')
+      +     '</select>'
+      +     '<button class="req-btn del" data-act="del" data-testid="request-delete-btn">Delete</button>'
+      +   '</div>'
+      + '</div></div>';
+  }).join('');
+  list.querySelectorAll('.req-card').forEach(card=>{
+    card.querySelector('.req-top').onclick = ()=>{
+      const dEl = card.querySelector('.req-details');
+      const open = dEl.style.display==='none';
+      dEl.style.display = open?'block':'none';
+      const b = reqItems.find(x=>x.id===card.dataset.id);
+      if(open && b && (b.status||'new')==='new') reqAction(b.id,'status','read');
+    };
+  });
+  list.querySelectorAll('.req-btn').forEach(btn=>{
+    btn.onclick = async (e)=>{
+      e.stopPropagation();
+      const card = btn.closest('.req-card');
+      const id = card.dataset.id;
+      const b = reqItems.find(x=>x.id===id);
+      const act = btn.dataset.act;
+      if(act==='copy'){
+        try{ await navigator.clipboard.writeText(b.handle); showToast('Contact copied — reach them on '+b.channel); }
+        catch(err){ prompt('Copy contact:', b.handle); }
+        return;
+      }
+      if(act==='star'){ reqAction(id,'priority', b.priority==='important'?'normal':'important'); return; }
+      if(act==='del'){
+        if(!confirm('Delete this request permanently?')) return;
+        reqAction(id,'del');
+      }
+    };
+  });
+  list.querySelectorAll('.req-status-sel').forEach(sel=>{
+    sel.onclick = e=>e.stopPropagation();
+    sel.onchange = ()=>reqAction(sel.closest('.req-card').dataset.id,'status',sel.value);
+  });
+}
+async function reqAction(id, kind, value){
+  try{
+    let r;
+    if(kind==='del') r = await fetch(MC_BASE()+'/api/bookings/'+id,{method:'DELETE',headers:authHeaders()});
+    else if(kind==='status') r = await fetch(MC_BASE()+'/api/bookings/'+id+'/status',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({status:value})});
+    else r = await fetch(MC_BASE()+'/api/bookings/'+id+'/priority',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({priority:value})});
+    if(!r.ok) throw new Error();
+    loadRequests();
+  }catch(e){ showToast('Action failed — not saved'); }
 }
 function esc(s){
   return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -811,6 +902,9 @@ function bindHandlers(){
   document.getElementById('btnExport').onclick      = exportSite;
   document.getElementById('editStatus').onclick     = toggleEditMode;
   document.getElementById('countrySearch').oninput  = renderCountryList;
+  document.getElementById('reqSearch').oninput = renderRequests;
+  document.getElementById('reqSort').onchange = renderRequests;
+  document.getElementById('reqFilter').onchange = renderRequests;
 
   const pvBtn = document.getElementById('btnPreviewGeo');
   if(pvBtn) pvBtn.onclick = () => {
