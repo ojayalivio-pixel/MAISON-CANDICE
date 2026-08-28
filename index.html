@@ -422,74 +422,9 @@ footer{
   letter-spacing:.08em;
 }
 
-
-/* SIDE CONTENTS / QUICK NAV */
-
-.contents-rail{
-  position:fixed;
-  right:24px;
-  top:50%;
-  transform:translateY(-50%);
-  width:210px;
-  z-index:35;
-  padding:20px 18px;
-  background:rgba(16,16,16,.9);
-  border:1px solid var(--line);
-  backdrop-filter:blur(18px);
-  box-shadow:0 18px 60px rgba(0,0,0,.35);
-}
-
-.contents-rail-title{
-  margin-bottom:14px;
-  color:var(--gold);
-  font-size:9px;
-  letter-spacing:.22em;
-}
-
-.contents-rail-list{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-.contents-rail-list a{
-  display:flex;
-  align-items:baseline;
-  gap:10px;
-  padding:7px 0;
-  color:#c8c2b7;
-  border-bottom:1px solid transparent;
-  font-size:9px;
-  letter-spacing:.12em;
-  transition:.2s;
-}
-
-.contents-rail-list a span{
-  color:#716b63;
-  font-size:8px;
-  letter-spacing:.08em;
-}
-
-.contents-rail-list a:hover{
-  color:#fff;
-  border-bottom-color:var(--gold);
-}
-
-@media(max-width:1200px){
-  .contents-rail{
-    right:14px;
-    width:185px;
-  }
-
-  .wrap{
-    width:min(1100px,88%);
-  }
-}
-
 /* MOBILE */
 
 @media(max-width:850px){
-  .contents-rail{display:none}
   .navlinks{display:none}
   section{padding:75px 0}
   .two,
@@ -520,23 +455,6 @@ footer{
     <a href="#payments">GIFTS</a>
   </div>
 </nav>
-
-
-<!-- SIDE CONTENTS -->
-<aside class="contents-rail" aria-label="Website contents">
-  <div class="contents-rail-title">EXPLORE</div>
-
-  <nav class="contents-rail-list">
-    <a href="#home"><span>01</span>WELCOME</a>
-    <a href="#candice"><span>02</span>CANDICE</a>
-    <a href="#experiences"><span>03</span>EXPERIENCES</a>
-    <a href="#gallery"><span>04</span>GALLERY</a>
-    <a href="#videos"><span>05</span>VIDEOS</a>
-    <a href="#travel"><span>06</span>TRAVEL</a>
-    <a href="#contact"><span>07</span>CONTACT</a>
-    <a href="#payments"><span>08</span>GIFTS &amp; SUPPORT</a>
-  </nav>
-</aside>
 
 <main>
 
