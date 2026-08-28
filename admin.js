@@ -98,7 +98,7 @@ function injectAdminHTML(){
       <div class="admin-label">Editable media</div>
       <div class="admin-tip">Gallery tiles (photos) and the featured video slot. Uploads are stored in the cloud and visible to every visitor — or paste any URL.</div>
       <div class="admin-label">Editable links</div>
-      <div class="admin-tip">With edit mode ON, click any contact, social or payment button to change where it points (OnlyFans, Telegram, Wise, PayPal…).</div>
+      <div class="admin-tip">With edit mode ON, click any contact, social or payment button to change where it points (Telegram, Wise, PayPal…).</div>
       <div class="admin-label">Reset</div>
       <button class="admin-action-btn danger" id="btnResetText">↺&nbsp;&nbsp;Restore original text</button>
       <button class="admin-action-btn danger" id="btnResetMedia" style="margin-top:8px">↺&nbsp;&nbsp;Remove all uploaded media</button>
@@ -111,6 +111,8 @@ function injectAdminHTML(){
         <div class="stat-box"><b id="statWeek">—</b><span>Last 7 days</span></div>
         <div class="stat-box"><b id="statAll">—</b><span>All time</span></div>
       </div>
+      <div class="admin-label" style="margin-top:20px">Where they visit from</div>
+      <div class="country-stats" id="countryStats"><div class="admin-tip">No country data yet.</div></div>
       <div class="admin-tip" id="statsErr" style="display:none;color:var(--crimson-hot)">Couldn't load stats — backend unreachable.</div>
     </div>
 
@@ -517,6 +519,19 @@ async function loadStats(){
     document.getElementById('statToday').textContent = d.today;
     document.getElementById('statWeek').textContent = d.week;
     document.getElementById('statAll').textContent = d.all_time;
+    const cs = document.getElementById('countryStats');
+    if(d.countries && d.countries.length){
+      const max = d.countries[0].count;
+      cs.innerHTML = d.countries.map(c=>{
+        const name = (COUNTRIES.find(x=>x[0]===c.code)||[])[1] || c.code;
+        const pct = Math.max(6, Math.round((c.count/max)*100));
+        return '<div class="cstat-row"><span class="cstat-name">'+name+'</span>'
+             + '<span class="cstat-bar"><i style="width:'+pct+'%"></i></span>'
+             + '<span class="cstat-n">'+c.count+'</span></div>';
+      }).join('');
+    } else {
+      cs.innerHTML = '<div class="admin-tip">No country data yet.</div>';
+    }
   }catch(e){
     err.style.display='block';
   }

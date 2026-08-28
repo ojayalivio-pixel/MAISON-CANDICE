@@ -102,14 +102,16 @@ class CompleteBody(BaseModel):
 
 class VisitBody(BaseModel):
     vid: str
+    country: str | None = None
 
 
 @api.post("/visits")
 async def record_visit(body: VisitBody):
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    cc = (body.country or "").strip().upper()[:2] or None
     await db.visits.update_one(
         {"vid": body.vid[:64], "date": today},
-        {"$setOnInsert": {"ts": datetime.now(timezone.utc).isoformat()}},
+        {"$setOnInsert": {"ts": datetime.now(timezone.utc).isoformat(), "country": cc}},
         upsert=True,
     )
     return {"ok": True}
@@ -121,10 +123,17 @@ async def visit_stats(x_admin_pass: str = Header(None)):
     now = datetime.now(timezone.utc)
     today = now.strftime("%Y-%m-%d")
     week = [(now - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(7)]
+    countries = await db.visits.aggregate([
+        {"$match": {"country": {"$nin": [None, ""]}}},
+        {"$group": {"_id": "$country", "n": {"$sum": 1}}},
+        {"$sort": {"n": -1}},
+        {"$limit": 10},
+    ]).to_list(10)
     return {
         "today": await db.visits.count_documents({"date": today}),
         "week": await db.visits.count_documents({"date": {"$in": week}}),
         "all_time": await db.visits.count_documents({}),
+        "countries": [{"code": c["_id"], "count": c["n"]} for c in countries],
     }
 
 

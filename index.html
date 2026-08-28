@@ -1211,9 +1211,9 @@ footer{
     <div class="eyebrow">Private · Sultry · By Appointment</div>
 
     <h1 class="serif">
-      <span class="line"><span>Come play in</span></span>
-      <span class="line"><span>my private world,</span></span>
-      <span class="line"><span class="accent">candice ferragamo.</span></span>
+      <span class="line"><span>Come Play in</span></span>
+      <span class="line"><span>My Private World,</span></span>
+      <span class="line"><span class="accent">Candice Ferragamo.</span></span>
     </h1>
 
     <p class="lead">
@@ -1244,7 +1244,6 @@ footer{
 
     <div class="hero-social" data-testid="hero-social-strip">
       <span class="hs-note">One tap</span>
-      <a class="hs-btn" data-testid="hero-onlyfans-btn" href="https://onlyfans.com/candiceferragamo" target="_blank" rel="noopener noreferrer" style="--brand-color:#00AFF0"><span class="dot"></span>OnlyFans</a>
       <a class="hs-btn" data-testid="hero-telegram-btn" href="https://t.me/privatemaisoncandice" target="_blank" rel="noopener noreferrer" style="--brand-color:#2AABEE"><span class="dot"></span>Telegram</a>
       <a class="hs-btn" data-testid="hero-whatsapp-btn" href="https://wa.me/message/46V4TW2E5ASNF1" target="_blank" rel="noopener noreferrer" style="--brand-color:#25D366"><span class="dot"></span>WhatsApp</a>
       <a class="hs-btn" data-testid="hero-snapchat-btn" href="https://snapchat.com/t/OkSSAxsc" target="_blank" rel="noopener noreferrer" style="--brand-color:#FFFC00"><span class="dot"></span>Snapchat</a>
@@ -1301,31 +1300,16 @@ footer{
       </div>
       <div class="card">
         <span class="card-num">03 / Intimate</span>
-        <h3>Virtual Dates</h3>
-        <p>Wine, low light, slow conversation. Real connection with international flair — jet lag optional.</p>
+        <h3>Virtual Dates &amp; In Person</h3>
+        <p>Wine, low light, slow conversation. Real connection online — or face to face, arranged with care and discretion.</p>
       </div>
       <div class="card">
-        <span class="card-num">04 / Imagination</span>
-        <h3>Roleplay &amp; Fantasy</h3>
-        <p>Creative, playful scenarios shaped around clear boundaries and enthusiastic mutual consent.</p>
-      </div>
-      <div class="card">
-        <span class="card-num">05 / Whisper</span>
-        <h3>Voice &amp; ASMR</h3>
-        <p>Personalised audio, breathy whispers, custom recordings. Perfect for the imagination.</p>
-      </div>
-      <div class="card">
-        <span class="card-num">06 / Custom</span>
-        <h3>A Tailored Encounter</h3>
-        <p>Something specific in mind? Tell me your idea — chances are, I'm already smiling.</p>
-      </div>
-      <div class="card">
-        <span class="card-num">07 / Power</span>
+        <span class="card-num">04 / Power</span>
         <h3>BDSM &amp; Domination</h3>
         <p>Structured power exchange with a firm, elegant hand. Boundaries honoured — control, absolute.</p>
       </div>
       <div class="card">
-        <span class="card-num">08 / Tribute</span>
+        <span class="card-num">05 / Tribute</span>
         <h3>Findom</h3>
         <p>Financial domination for the devoted. Spoil, surrender, and earn my attention — generosity is your love language.</p>
         <a href="#payments" class="tribute-btn" data-testid="send-tribute-btn">
@@ -1335,9 +1319,24 @@ footer{
         </a>
       </div>
       <div class="card">
-        <span class="card-num">09 / Devotion</span>
+        <span class="card-num">06 / Devotion</span>
         <h3>Slave Training</h3>
         <p>Strict, disciplined servitude under my rule. Obedience is expected — loyalty is rewarded.</p>
+      </div>
+      <div class="card">
+        <span class="card-num">07 / Imagination</span>
+        <h3>Roleplay &amp; Fantasy</h3>
+        <p>Creative, playful scenarios shaped around clear boundaries and enthusiastic mutual consent.</p>
+      </div>
+      <div class="card">
+        <span class="card-num">08 / Whisper</span>
+        <h3>Voice &amp; ASMR</h3>
+        <p>Personalised audio, breathy whispers, custom recordings. Perfect for the imagination.</p>
+      </div>
+      <div class="card">
+        <span class="card-num">09 / Custom</span>
+        <h3>A Tailored Encounter</h3>
+        <p>Something specific in mind? Tell me your idea — chances are, I'm already smiling.</p>
       </div>
     </div>
   </div>
@@ -1525,18 +1524,6 @@ footer{
           <span class="contact-handle">Not available</span>
         </div>
         <span class="contact-status">Closed</span>
-      </a>
-
-      <!-- ONLYFANS -->
-      <a class="contact-btn" data-testid="contact-onlyfans-btn" href="https://onlyfans.com/candiceferragamo" target="_blank" rel="noopener noreferrer" style="--brand-color:#00AFF0">
-        <span class="contact-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/></svg>
-        </span>
-        <div>
-          <span class="contact-label">OnlyFans</span>
-          <span class="contact-handle">/candiceferragamo</span>
-        </div>
-        <span class="contact-status on">Open</span>
       </a>
 
       <!-- TELEGRAM -->
@@ -1731,7 +1718,10 @@ footer{
     if(sessionStorage.getItem('candice_admin_session')==='1') return;
     var vid = localStorage.getItem('candice_vid');
     if(!vid){ vid = 'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,10); localStorage.setItem('candice_vid', vid); }
-    fetch(location.origin+'/api/visits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vid:vid})}).catch(function(){});
+    var send = function(cc){
+      fetch(location.origin+'/api/visits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vid:vid,country:cc||null})}).catch(function(){});
+    };
+    fetch('https://ipapi.co/json/').then(function(r){return r.json()}).then(function(d){send(d.country_code)}).catch(function(){send(null)});
   }catch(e){}
 })();
 

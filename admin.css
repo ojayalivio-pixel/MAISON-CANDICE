@@ -472,3 +472,11 @@ body.edit-mode [data-link]:hover{outline-color:var(--crimson-hot)}
 .stat-box{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:16px 10px;text-align:center}
 .stat-box b{display:block;font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:var(--champagne);line-height:1}
 .stat-box span{display:block;margin-top:7px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+
+/* country stats */
+.country-stats{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.cstat-row{display:grid;grid-template-columns:1fr 90px 30px;align-items:center;gap:10px}
+.cstat-name{font-size:11px;color:var(--text);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cstat-bar{height:5px;background:var(--panel-3);border-radius:99px;overflow:hidden}
+.cstat-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--crimson),var(--champagne));border-radius:99px}
+.cstat-n{font-size:11px;color:var(--champagne-soft);text-align:right;font-weight:500}
