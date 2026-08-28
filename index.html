@@ -1,8 +1,19 @@
 <!doctype html>
-<html lang="en"><head><style>body {transition: opacity ease-in 0.2s; } 
-body[unresolved] {opacity: 0; display: block; overflow: hidden; position: relative; } 
-</style>
+<html lang="en" class="mc-geo-pending">
+<head>
 <meta charset="utf-8">
+<style id="mcGeoGuard">html.mc-geo-pending [data-restrict]{display:none !important}</style>
+<script>
+window.MC_API_BASE = window.MC_API_BASE || "";
+document.documentElement.classList.add('mc-geo-pending');
+setTimeout(function(){
+  var h=document.documentElement;
+  if(h.classList.contains('mc-geo-pending')){
+    if(document.body) document.body.classList.add('geo-blur');
+    h.classList.remove('mc-geo-pending');
+  }
+},12000);
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="Candice Ferragamo — a private, sultry, international digital experience. By appointment only.">
 <meta name="theme-color" content="#0a0507">
@@ -2428,9 +2439,9 @@ body.edit-mode [data-link]:hover{outline-color:var(--crimson-hot)}
     var vid = localStorage.getItem('candice_vid');
     if(!vid){ vid = 'v'+Date.now().toString(36)+Math.random().toString(36).slice(2,10); localStorage.setItem('candice_vid', vid); }
     var send = function(cc){
-      fetch(location.origin+'/api/visits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vid:vid,country:cc||null})}).catch(function(){});
+      fetch((window.MC_API_BASE||location.origin)+'/api/visits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vid:vid,country:cc||null})}).catch(function(){});
     };
-    fetch(location.origin+'/api/geo').then(function(r){return r.json()}).then(function(d){send(d.country_code)}).catch(function(){send(null)});
+    fetch((window.MC_API_BASE||location.origin)+'/api/geo').then(function(r){return r.json()}).then(function(d){send(d.country_code)}).catch(function(){send(null)});
   }catch(e){}
 })();
 
@@ -2456,7 +2467,7 @@ body.edit-mode [data-link]:hover{outline-color:var(--crimson-hot)}
     const btn = bf.querySelector('button[type=submit]');
     btn.disabled = true;
     try{
-      const r = await fetch(location.origin+'/api/bookings',{
+      const r = await fetch((window.MC_API_BASE||location.origin)+'/api/bookings',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({

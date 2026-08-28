@@ -191,6 +191,7 @@ async def create_booking(body: BookingBody, request: Request):
         "preferred": body.preferred.strip()[:200],
         "message": body.message.strip()[:1500],
         "status": "new",
+        "priority": "normal",
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.bookings.insert_one(doc)
@@ -206,9 +207,23 @@ async def list_bookings(_: bool = Depends(require_admin)):
 
 @api.post("/bookings/{booking_id}/status")
 async def update_booking(booking_id: str, body: BookingStatusBody, _: bool = Depends(require_admin)):
-    if body.status not in ("new", "handled"):
+    if body.status not in ("new", "read", "pending", "confirmed", "declined", "completed", "archived", "handled"):
         raise HTTPException(status_code=400, detail="Invalid status")
     r = await db.bookings.update_one({"id": booking_id}, {"$set": {"status": body.status}})
+    if r.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"ok": True}
+
+
+class BookingPriorityBody(BaseModel):
+    priority: str
+
+
+@api.post("/bookings/{booking_id}/priority")
+async def update_booking_priority(booking_id: str, body: BookingPriorityBody, _: bool = Depends(require_admin)):
+    if body.priority not in ("important", "normal", "archived", "completed"):
+        raise HTTPException(status_code=400, detail="Invalid priority")
+    r = await db.bookings.update_one({"id": booking_id}, {"$set": {"priority": body.priority}})
     if r.matched_count == 0:
         raise HTTPException(status_code=404, detail="Not found")
     return {"ok": True}
@@ -323,6 +338,16 @@ async def geo(request: Request):
     return {"country_code": cc, "country": country}
 
 
+@api.get("/geo-check")
+async def geo_check(request: Request):
+    doc = await db.settings.find_one({"key": "blocked_countries"})
+    blocked = (doc or {}).get("value") or []
+    g = await geo(request)
+    cc = g["country_code"]
+    restricted = bool(blocked) and (not cc or cc in blocked)
+    return {"country_code": cc, "country": g["country"], "restricted": restricted}
+
+
 
 @api.post("/media/upload/init")
 async def upload_init(body: InitBody, _: bool = Depends(require_admin)):
@@ -434,13 +459,9 @@ async def startup():
     try:
         existing = await db.settings.find_one({"key": "admin_pass_hash"})
         if not existing:
-            old = await db.settings.find_one({"key": "admin_pass"})
-            seed = old["value"] if old else ADMIN_UPLOAD_PASS
             await db.settings.update_one(
-                {"key": "admin_pass_hash"}, {"$set": {"value": _hash_pw(seed)}}, upsert=True
+                {"key": "admin_pass_hash"}, {"$set": {"value": _hash_pw(ADMIN_UPLOAD_PASS)}}, upsert=True
             )
-            if old:
-                await db.settings.delete_one({"key": "admin_pass"})
         await db.login_attempts.create_index("ip")
     except Exception as e:
         logger.error(f"Admin seed failed: {e}")

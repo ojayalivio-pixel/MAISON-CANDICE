@@ -4,9 +4,11 @@
    in the DOM until this script runs and injects it.
 
    Trigger: Ctrl / Cmd + Shift + K   or add #backstage to URL
-   Default password: candice2026  (change inside → Settings)
+   Login is verified server-side (JWT). Change the password inside → Settings.
    ========================================================= */
 (function(){
+
+function MC_BASE(){return window.MC_API_BASE || location.origin;}
 
 const LS = {
   token:'candice_admin_token',
@@ -84,7 +86,7 @@ function injectAdminHTML(){
 
   <div class="admin-tabs">
     <button class="admin-tab active" data-tab="edit">EDIT</button>
-    <button class="admin-tab" data-tab="requests">REQUESTS</button>
+    <button class="admin-tab" data-tab="requests">REQUESTS<span class="req-tab-badge" id="reqTabBadge" data-testid="requests-new-badge" style="display:none">0</span></button>
     <button class="admin-tab" data-tab="stats">STATS</button>
     <button class="admin-tab" data-tab="geo">COUNTRIES</button>
     <button class="admin-tab" data-tab="settings">SETTINGS</button>
@@ -111,7 +113,28 @@ function injectAdminHTML(){
 
     <div class="admin-section" data-section="requests">
       <div class="blocked-count" id="reqCount">Loading…</div>
-      <div class="req-list" id="reqList"></div>
+      <input type="text" class="country-search" id="reqSearch" data-testid="requests-search-input" placeholder="Search name, handle, message…">
+      <div class="req-controls">
+        <select id="reqSort" data-testid="requests-sort-select">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="preferred">Preferred date/time</option>
+          <option value="important">Most important first</option>
+          <option value="unread">Unread / new first</option>
+        </select>
+        <select id="reqFilter" data-testid="requests-filter-select">
+          <option value="">All statuses</option>
+          <option value="new">New</option>
+          <option value="read">Read</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="declined">Declined</option>
+          <option value="completed">Completed</option>
+          <option value="archived">Archived</option>
+          <option value="__important">⭐ Important only</option>
+        </select>
+      </div>
+      <div class="req-list" id="reqList" data-testid="requests-inbox-list"></div>
       <div class="admin-tip" id="reqErr" style="display:none;color:var(--crimson-hot)">Couldn't load requests — backend unreachable.</div>
     </div>
 
@@ -138,6 +161,7 @@ function injectAdminHTML(){
 
     <div class="admin-section" data-section="settings">
       <div class="admin-label">Change admin password</div>
+      <input type="password" class="admin-input" id="curPass" placeholder="Current password" autocomplete="current-password" style="margin-bottom:8px">
       <input type="password" class="admin-input" id="newPass" placeholder="New password" autocomplete="new-password">
       <div class="admin-row">
         <button class="admin-btn" id="btnSavePass">SAVE PASSWORD</button>
@@ -404,7 +428,7 @@ function setMediaTab(name){
 }
 /* ---------- Cloud upload (chunked, bypasses proxy limits) ---------- */
 async function uploadToCloud(file, onProgress){
-  const API = location.origin;
+  const API = MC_BASE();
   const headers = {'Authorization': 'Bearer '+getToken()};
   const initR = await fetch(API+'/api/media/upload/init',{
     method:'POST',
@@ -498,7 +522,7 @@ async function submitAdminLogin(){
   const errEl = document.getElementById('adminErr');
   errEl.textContent = 'Checking…';
   try{
-    const r = await fetch(location.origin+'/api/admin/login',{
+    const r = await fetch(MC_BASE()+'/api/admin/login',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({password:v})
@@ -518,6 +542,24 @@ function openAdmin(){
   renderCountryList();
   updateBlockedCount();
   syncBlockedFromServer();
+  updateReqBadge();
+  if(!window._reqBadgeTimer) window._reqBadgeTimer = setInterval(updateReqBadge, 30000);
+}
+async function updateReqBadge(){
+  if(!isLoggedIn()) return;
+  try{
+    const r = await fetch(MC_BASE()+'/api/bookings',{headers:authHeaders()});
+    if(!r.ok) return;
+    const d = await r.json();
+    reqItems = d.items || [];
+    setReqBadge(d.new_count);
+  }catch(e){}
+}
+function setReqBadge(n){
+  const b = document.getElementById('reqTabBadge');
+  if(!b) return;
+  b.textContent = n;
+  b.style.display = n>0 ? 'inline-flex' : 'none';
 }
 function closeAdmin(){
   document.getElementById('adminPanel').classList.remove('show');
@@ -535,47 +577,118 @@ function switchTab(name){
   if(name==='requests') loadRequests();
   if(name==='geo') syncBlockedFromServer();
 }
+let reqItems = [];
 async function loadRequests(){
-  const list = document.getElementById('reqList');
   const err = document.getElementById('reqErr');
   const cnt = document.getElementById('reqCount');
   err.style.display='none';
   try{
-    const r = await fetch(location.origin+'/api/bookings',{headers:authHeaders()});
+    const r = await fetch(MC_BASE()+'/api/bookings',{headers:authHeaders()});
     if(!r.ok) throw new Error();
     const d = await r.json();
-    cnt.textContent = d.items.length ? (d.new_count+' new · '+d.items.length+' total') : 'No requests yet';
-    list.innerHTML = d.items.map(b=>{
-      const when = new Date(b.created_at).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-      return '<div class="req-card '+(b.status==='new'?'unread':'')+'" data-id="'+b.id+'">'
-        + '<div class="req-top"><span class="req-name">'+esc(b.name)+'</span><span class="req-time">'+when+'</span></div>'
-        + '<div class="req-meta">'+esc(b.session_type)+(b.mode?' · '+esc(b.mode):'')+' · '+esc(b.channel)+' → <b>'+esc(b.handle)+'</b></div>'
-        + (b.preferred?'<div class="req-meta">Prefers: '+esc(b.preferred)+'</div>':'')
-        + '<div class="req-msg">'+esc(b.message)+'</div>'
-        + '<div class="req-actions">'
-        + (b.status==='new'?'<button class="req-btn done" data-act="done">✓ Mark handled</button>':'<span class="req-handled">Handled</span>')
-        + '<button class="req-btn del" data-act="del">Delete</button>'
-        + '</div></div>';
-    }).join('');
-    list.querySelectorAll('.req-btn').forEach(btn=>{
-      btn.onclick = async ()=>{
-        const id = btn.closest('.req-card').dataset.id;
-        const act = btn.dataset.act;
-        try{
-          if(act==='del'){
-            if(!confirm('Delete this request?')) return;
-            await fetch(location.origin+'/api/bookings/'+id,{method:'DELETE',headers:authHeaders()});
-          } else {
-            await fetch(location.origin+'/api/bookings/'+id+'/status',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({status:'handled'})});
-          }
-          loadRequests();
-        }catch(e){showToast('Action failed')}
-      };
-    });
+    reqItems = d.items || [];
+    setReqBadge(d.new_count);
+    cnt.textContent = reqItems.length ? (d.new_count+' new · '+reqItems.length+' total') : 'No requests yet';
+    renderRequests();
   }catch(e){
     cnt.textContent='—';
     err.style.display='block';
   }
+}
+const REQ_STATUSES = ['new','read','pending','confirmed','declined','completed','archived'];
+function renderRequests(){
+  const list = document.getElementById('reqList');
+  const q = (document.getElementById('reqSearch').value||'').toLowerCase();
+  const sort = document.getElementById('reqSort').value;
+  const filter = document.getElementById('reqFilter').value;
+  let items = reqItems.slice();
+  if(q) items = items.filter(b=>[b.name,b.handle,b.message,b.channel,b.session_type,b.preferred].join(' ').toLowerCase().includes(q));
+  if(filter==='__important') items = items.filter(b=>b.priority==='important');
+  else if(filter) items = items.filter(b=>(b.status||'new')===filter);
+  items.sort((a,b)=>{
+    if(sort==='oldest') return a.created_at<b.created_at?-1:1;
+    if(sort==='preferred') return (a.preferred||'\uffff').localeCompare(b.preferred||'\uffff');
+    if(sort==='important'){
+      const ia=a.priority==='important'?0:1, ib=b.priority==='important'?0:1;
+      if(ia!==ib) return ia-ib;
+    }
+    if(sort==='unread'){
+      const na=(a.status||'new')==='new'?0:1, nb=(b.status||'new')==='new'?0:1;
+      if(na!==nb) return na-nb;
+    }
+    return a.created_at>b.created_at?-1:1;
+  });
+  if(!items.length){ list.innerHTML='<div class="admin-tip">Nothing matches.</div>'; return; }
+  list.innerHTML = items.map(b=>{
+    const st = b.status||'new';
+    const imp = b.priority==='important';
+    const when = new Date(b.created_at).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    return '<div class="req-card '+(st==='new'?'unread':'')+(imp?' important':'')+'" data-id="'+b.id+'" data-testid="request-card">'
+      + '<div class="req-top">'
+      +   '<span class="req-name">'+(imp?'⭐ ':'')+esc(b.name)+'</span>'
+      +   '<span class="req-time">'+when+'</span>'
+      + '</div>'
+      + '<div class="req-meta"><b>'+esc(b.channel)+'</b> → '+esc(b.handle)+'</div>'
+      + '<div class="req-meta">'+esc(b.session_type)+(b.mode?' · '+esc(b.mode):'')+'</div>'
+      + '<div class="req-meta">Preferred: '+(b.preferred?esc(b.preferred):'<i>not given</i>')+'</div>'
+      + '<div class="req-badges"><span class="req-badge st-'+st+'">'+st.toUpperCase()+'</span>'+(imp?'<span class="req-badge st-important">IMPORTANT</span>':'')+'</div>'
+      + '<div class="req-details" style="display:none">'
+      +   '<div class="req-msg">'+esc(b.message)+'</div>'
+      +   '<div class="req-meta">Submitted: '+when+'</div>'
+      +   '<div class="req-actions">'
+      +     '<button class="req-btn" data-act="copy" data-testid="request-copy-handle-btn">⧉ Copy '+esc(b.channel)+' contact</button>'
+      +     '<button class="req-btn" data-act="star" data-testid="request-star-btn">'+(imp?'★ Unmark important':'☆ Mark important')+'</button>'
+      +   '</div>'
+      +   '<div class="req-actions">'
+      +     '<select class="req-status-sel" data-testid="request-status-select">'
+      +       REQ_STATUSES.map(s=>'<option value="'+s+'"'+(s===st?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1)+'</option>').join('')
+      +     '</select>'
+      +     '<button class="req-btn del" data-act="del" data-testid="request-delete-btn">Delete</button>'
+      +   '</div>'
+      + '</div></div>';
+  }).join('');
+  list.querySelectorAll('.req-card').forEach(card=>{
+    card.querySelector('.req-top').onclick = ()=>{
+      const dEl = card.querySelector('.req-details');
+      const open = dEl.style.display==='none';
+      dEl.style.display = open?'block':'none';
+      const b = reqItems.find(x=>x.id===card.dataset.id);
+      if(open && b && (b.status||'new')==='new') reqAction(b.id,'status','read');
+    };
+  });
+  list.querySelectorAll('.req-btn').forEach(btn=>{
+    btn.onclick = async (e)=>{
+      e.stopPropagation();
+      const card = btn.closest('.req-card');
+      const id = card.dataset.id;
+      const b = reqItems.find(x=>x.id===id);
+      const act = btn.dataset.act;
+      if(act==='copy'){
+        try{ await navigator.clipboard.writeText(b.handle); showToast('Contact copied — reach them on '+b.channel); }
+        catch(err){ prompt('Copy contact:', b.handle); }
+        return;
+      }
+      if(act==='star'){ reqAction(id,'priority', b.priority==='important'?'normal':'important'); return; }
+      if(act==='del'){
+        if(!confirm('Delete this request permanently?')) return;
+        reqAction(id,'del');
+      }
+    };
+  });
+  list.querySelectorAll('.req-status-sel').forEach(sel=>{
+    sel.onclick = e=>e.stopPropagation();
+    sel.onchange = ()=>reqAction(sel.closest('.req-card').dataset.id,'status',sel.value);
+  });
+}
+async function reqAction(id, kind, value){
+  try{
+    let r;
+    if(kind==='del') r = await fetch(MC_BASE()+'/api/bookings/'+id,{method:'DELETE',headers:authHeaders()});
+    else if(kind==='status') r = await fetch(MC_BASE()+'/api/bookings/'+id+'/status',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({status:value})});
+    else r = await fetch(MC_BASE()+'/api/bookings/'+id+'/priority',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({priority:value})});
+    if(!r.ok) throw new Error();
+    loadRequests();
+  }catch(e){ showToast('Action failed — not saved'); }
 }
 function esc(s){
   return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -584,7 +697,7 @@ async function loadStats(){
   const err = document.getElementById('statsErr');
   err.style.display='none';
   try{
-    const r = await fetch(location.origin+'/api/visits/stats',{headers:authHeaders()});
+    const r = await fetch(MC_BASE()+'/api/visits/stats',{headers:authHeaders()});
     if(r.status===401){
       err.textContent = "Couldn't load stats — password doesn't match the server. Re-set it in Settings.";
       err.style.display='block';
@@ -614,22 +727,22 @@ async function loadStats(){
   }
 }
 async function changePassword(){
+  const cur = document.getElementById('curPass').value;
   const v = document.getElementById('newPass').value.trim();
-  if(v.length<4){showToast('Too short');return;}
+  if(v.length<4){showToast('New password too short');return;}
+  if(!cur){showToast('Enter your current password');return;}
   try{
-    const r = await fetch(location.origin+'/api/admin/password',{
+    const r = await fetch(MC_BASE()+'/api/admin/password',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({current:getPass(), new:v})
+      headers:authHeaders({'Content-Type':'application/json'}),
+      body:JSON.stringify({current:cur, new:v})
     });
-    if(r.status===401){showToast('Backend rejected current password');return;}
+    if(r.status===401){showToast('Wrong current password');return;}
     if(!r.ok){showToast('Server error — try again');return;}
-    try{localStorage.setItem(LS.pass, v)}catch(e){}
+    document.getElementById('curPass').value='';
     document.getElementById('newPass').value='';
-    showToast('Password updated everywhere');
+    showToast('Password updated');
   }catch(e){
-    // Do NOT save locally when the server can't confirm — that would desync
-    // the browser password from the backend and break stats/bookings/uploads.
     showToast('Backend unreachable — password unchanged');
   }
 }
@@ -641,7 +754,7 @@ function getBlocked(){try{return JSON.parse(localStorage.getItem(LS.blocked)||'[
 function setBlocked(list){try{localStorage.setItem(LS.blocked, JSON.stringify(list))}catch(e){}}
 async function syncBlockedFromServer(){
   try{
-    const r = await fetch(location.origin+'/api/blocked-countries',{cache:'no-store'});
+    const r = await fetch(MC_BASE()+'/api/blocked-countries',{cache:'no-store'});
     if(r.ok){ const d = await r.json(); setBlocked(d.countries||[]); renderCountryList(); updateBlockedCount(); }
   }catch(e){}
 }
@@ -653,7 +766,7 @@ async function toggleBlocked(code){
   renderCountryList();
   updateBlockedCount();
   try{
-    const r = await fetch(location.origin+'/api/blocked-countries',{
+    const r = await fetch(MC_BASE()+'/api/blocked-countries',{
       method:'POST',
       headers:authHeaders({'Content-Type':'application/json'}),
       body:JSON.stringify({countries:b})
@@ -686,26 +799,29 @@ function renderCountryList(){
     r.addEventListener('click',()=>toggleBlocked(r.dataset.code));
   });
 }
+function mcReveal(){document.documentElement.classList.remove('mc-geo-pending');}
 async function enforceGeoBlock(){
-  if(isLoggedIn()) return;
-  let blocked = [];
-  try{
-    const r = await fetch(location.origin+'/api/blocked-countries',{cache:'no-store'});
-    if(r.ok){ const d = await r.json(); blocked = d.countries||[]; }
-    else blocked = getBlocked();
-  }catch(e){ blocked = getBlocked(); }
-  if(!blocked.length) return;
-  try{
-    const r = await fetch(location.origin+'/api/geo', {cache:'no-store'});
-    const d = await r.json();
-    const code = (d.country_code||'').toUpperCase();
-    if(code && blocked.includes(code)){
-      const name = (COUNTRIES.find(c=>c[0]===code)||[])[1] || code;
+  if(isLoggedIn()){ mcReveal(); return; }
+  let ok=false, restricted=false, country='';
+  for(let i=0;i<2 && !ok;i++){
+    try{
+      const r = await fetch(MC_BASE()+'/api/geo-check',{cache:'no-store'});
+      if(!r.ok) throw new Error('bad status');
+      const d = await r.json();
+      restricted = !!d.restricted;
+      country = d.country || d.country_code || '';
+      ok = true;
+    }catch(e){ if(i===0) await new Promise(res=>setTimeout(res,1200)); }
+  }
+  if(!ok) restricted = true; /* fail-safe: never expose sensitive content if the check can't run */
+  if(restricted){
+    if(country){
       const cEl = document.getElementById('geoCountry');
-      if(cEl) cEl.textContent = name;
-      restrictSensitive();
+      if(cEl) cEl.textContent = country;
     }
-  }catch(e){}
+    restrictSensitive();
+  }
+  mcReveal();
 }
 
 /* Apply country privacy: hide escort / in-person tells, remove in-person options */
@@ -716,6 +832,7 @@ function restrictSensitive(){
   });
 }
 window.enforceGeoBlock = enforceGeoBlock;
+window.mcReveal = mcReveal;
 window.restrictSensitive = restrictSensitive;
 
 /* =========================================================
@@ -765,9 +882,8 @@ async function exportSite(){
   const stateBoot = `
 <script>
 (function(){try{
-  var K={pass:'candice_admin_pass',content:'candice_content',media:'candice_media',links:'candice_links',blocked:'candice_blocked_countries'};
+  var K={content:'candice_content',media:'candice_media',links:'candice_links',blocked:'candice_blocked_countries'};
   if(!localStorage.getItem(K.blocked)) localStorage.setItem(K.blocked, ${JSON.stringify(localStorage.getItem(LS.blocked)||'[]')});
-  if(!localStorage.getItem(K.pass))    localStorage.setItem(K.pass,    ${JSON.stringify(getPass())});
   if(!localStorage.getItem(K.content)) localStorage.setItem(K.content, ${JSON.stringify(localStorage.getItem(LS.content)||'{}')});
   if(!localStorage.getItem(K.media))   localStorage.setItem(K.media,   ${JSON.stringify(localStorage.getItem(LS.media)||'{}')});
   if(!localStorage.getItem(K.links))   localStorage.setItem(K.links,   ${JSON.stringify(localStorage.getItem(LS.links)||'{}')});
@@ -805,6 +921,9 @@ function bindHandlers(){
   document.getElementById('btnExport').onclick      = exportSite;
   document.getElementById('editStatus').onclick     = toggleEditMode;
   document.getElementById('countrySearch').oninput  = renderCountryList;
+  document.getElementById('reqSearch').oninput = renderRequests;
+  document.getElementById('reqSort').onchange = renderRequests;
+  document.getElementById('reqFilter').onchange = renderRequests;
 
   const pvBtn = document.getElementById('btnPreviewGeo');
   if(pvBtn) pvBtn.onclick = () => {

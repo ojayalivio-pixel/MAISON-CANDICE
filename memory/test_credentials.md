@@ -1,12 +1,23 @@
-# Test Credentials
+# Test Credentials — Candice Ferragamo site
 
-## Admin (Backstage) — static site + FastAPI media backend
-- NOTE: age gate REMOVED (site loads directly)
-- Access: append `#backstage` to URL, or press Ctrl/Cmd+Shift+K
-- Password: `candice2026` (user may change it in Backstage → Settings; change syncs to backend via POST /api/admin/password, stored in Mongo `settings` collection — env ADMIN_UPLOAD_PASS is only the fallback default)
-- Cloud upload API auth: header `X-Admin-Pass: candice2026` (backend env ADMIN_UPLOAD_PASS)
-- Stored in localStorage key `candice_admin_pass` (default hardcoded fallback in admin.js)
-- Session flag: sessionStorage `candice_admin_session`
+## Backstage Admin (server-verified JWT auth)
+- Open Backstage: press **Ctrl/⌘ + Shift + K** on the site, or add `#backstage` to the URL.
+- Password: `candice2026`
+- Auth flow: client POSTs `{password}` to `POST /api/admin/login` → receives a JWT → stored in sessionStorage (`candice_admin_token`) → sent as `Authorization: Bearer <token>` on all admin API calls.
+- Password is stored server-side as a **bcrypt hash** in Mongo `db.settings` key `admin_pass_hash` (seeded from backend `.env` `ADMIN_UPLOAD_PASS=candice2026` on first startup). The password is NOT present anywhere in client code.
+- Brute-force: 5 failed logins per IP / 15 min → HTTP 429 lockout.
+- Change password: Backstage → SETTINGS (requires current + new password; verified server-side).
 
-## Age Gate
-- REMOVED per user request (2026-06). Site loads directly after the veil animation.
+## Backend admin endpoints (require Bearer JWT)
+- POST /api/admin/login (public) — get token
+- POST /api/admin/password (auth) — change password
+- GET /api/bookings, POST /api/bookings/{id}/status, DELETE /api/bookings/{id} (auth)
+- GET /api/visits/stats (auth)
+- POST /api/blocked-countries (auth); GET /api/blocked-countries (public)
+- POST /api/media/upload/init|chunk|complete (auth)
+- GET /api/geo (public), POST /api/visits (public, rate-limited via booking limiter n/a)
+- POST /api/bookings (public, rate-limited: 5/hour/IP)
+
+## Notes
+- `.env` (JWT_SECRET, MONGO_URL, EMERGENT_LLM_KEY, ADMIN_UPLOAD_PASS) is NOT publicly served (static server allowlist).
+- Since `.env` was briefly public before the fix, rotate ADMIN_UPLOAD_PASS / change the admin password after deploy.
