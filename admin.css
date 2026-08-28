@@ -26,7 +26,7 @@ body.geo-blocked > *:not(.geo-block){display:none !important}
 }
 .geo-card h2{
   margin:0 0 20px;
-  font-family:'Fraunces',serif;
+  font-family:'Cormorant Garamond',serif;
   font-style:italic;
   font-size:40px;
   line-height:1;
@@ -67,7 +67,7 @@ body.geo-blocked > *:not(.geo-block){display:none !important}
 }
 .admin-login-card h3{
   margin:0 0 8px;
-  font-family:'Fraunces',serif;
+  font-family:'Cormorant Garamond',serif;
   font-style:italic;
   font-size:26px;
   color:var(--silk);
@@ -80,7 +80,7 @@ body.geo-blocked > *:not(.geo-block){display:none !important}
   background:var(--ink);
   border:1px solid var(--line-warm);
   color:var(--silk);
-  font-family:'Manrope',sans-serif;
+  font-family:'Jost',sans-serif;
   font-size:14px;
   letter-spacing:.06em;
   outline:none;
@@ -94,7 +94,7 @@ body.geo-blocked > *:not(.geo-block){display:none !important}
   background:var(--crimson);
   color:#fff;
   border:none;
-  font-family:'Manrope',sans-serif;
+  font-family:'Jost',sans-serif;
   font-size:10px;
   letter-spacing:.24em;
   font-weight:600;
@@ -136,7 +136,7 @@ body.geo-blocked > *:not(.geo-block){display:none !important}
 }
 .admin-head h4{
   margin:0;
-  font-family:'Fraunces',serif;
+  font-family:'Cormorant Garamond',serif;
   font-style:italic;
   font-size:20px;
   color:var(--silk);
@@ -163,7 +163,7 @@ body.geo-blocked > *:not(.geo-block){display:none !important}
   border:none;
   border-bottom:2px solid transparent;
   color:var(--muted);
-  font-family:'Manrope',sans-serif;
+  font-family:'Jost',sans-serif;
   font-size:10px;
   letter-spacing:.2em;
   font-weight:600;
@@ -266,7 +266,7 @@ body.edit-mode [data-media]:hover{outline-color:var(--champagne)}
   background:rgba(8,6,10,.92);
   border:1px solid var(--champagne);
   color:var(--champagne);
-  font-family:'Manrope',sans-serif;
+  font-family:'Jost',sans-serif;
   font-size:10px;
   letter-spacing:.18em;
   font-weight:600;
@@ -300,7 +300,7 @@ body.edit-mode [data-media] .media-edit-btn{display:inline-flex}
 }
 .media-picker-card h3{
   margin:0 0 6px;
-  font-family:'Fraunces',serif;
+  font-family:'Cormorant Garamond',serif;
   font-style:italic;
   font-size:26px;
   color:var(--silk);
@@ -320,7 +320,7 @@ body.edit-mode [data-media] .media-edit-btn{display:inline-flex}
   border:none;
   border-bottom:2px solid transparent;
   color:var(--muted);
-  font-family:'Manrope',sans-serif;
+  font-family:'Jost',sans-serif;
   font-size:10px;
   letter-spacing:.22em;
   font-weight:600;
@@ -343,7 +343,7 @@ body.edit-mode [data-media] .media-edit-btn{display:inline-flex}
 .media-drop.dragover{border-color:var(--crimson);background:rgba(225,29,72,.06);color:var(--rose)}
 .media-drop input{display:none}
 .media-drop .big{
-  font-family:'Fraunces',serif;
+  font-family:'Cormorant Garamond',serif;
   font-style:italic;
   font-size:22px;
   color:var(--silk);
@@ -358,7 +358,7 @@ body.edit-mode [data-media] .media-edit-btn{display:inline-flex}
   background:var(--ink);
   border:1px solid var(--line-warm);
   color:var(--silk);
-  font-family:'Manrope',sans-serif;
+  font-family:'Jost',sans-serif;
   font-size:13px;
   outline:none;
   margin-bottom:12px;
@@ -410,7 +410,7 @@ body.edit-mode [data-media] .media-edit-btn{display:inline-flex}
   background:var(--panel-2);
   border:1px solid var(--line-warm);
   color:var(--silk);
-  font-family:'Manrope',sans-serif;
+  font-family:'Jost',sans-serif;
   font-size:10px;
   letter-spacing:.22em;
   font-weight:600;
