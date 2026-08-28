@@ -18,17 +18,16 @@
 body.geo-blocked .geo-block{display:flex}
 body.geo-blocked > *:not(.geo-block){display:none !important}
 
-/* ---------- Geo PRIVACY: restrict only escort / in-person tells in blocked regions ---------- */
-/* Inline tells (nav link, in-person card, in-person booking toggle) are removed */
-body.geo-blur [data-restrict]:not([data-restrict="section"]){display:none !important}
-
-/* Sensitive full section (Travel) is replaced with a discreet privacy panel */
-.restrict-msg{display:none}
-body.geo-blur [data-restrict="section"] .restrict-hide{display:none !important}
-body.geo-blur [data-restrict="section"] .restrict-msg{display:block}
-.privacy-panel{max-width:640px;margin:0 auto;text-align:center;padding:20px 0}
-.privacy-panel h2{margin:14px 0 18px}
-.privacy-panel .lead{margin:0 auto;max-width:520px}
+/* ---------- Geo PRIVACY: BLUR only escort / in-person tells in blocked regions ---------- */
+/* Sensitive bits (in-person card, booking toggle, travel location/dates/availability/meet button) */
+/* are blurred but still visible; all non-explicit content stays fully readable.                 */
+body.geo-blur [data-restrict]{
+  filter:blur(7px) !important;
+  pointer-events:none !important;
+  user-select:none !important;
+  -webkit-user-select:none !important;
+  transition:filter .3s ease;
+}
 
 body.geo-blur .geo-blur-banner{display:flex}
 .geo-blur-banner{

@@ -60,7 +60,7 @@ function injectAdminHTML(){
 </div>
 
 <div class="geo-blur-banner" id="geoBlurBanner" data-testid="geo-blur-banner">
-  <span class="gbb-dot"></span>Some details are kept private in your region
+  <span class="gbb-dot"></span>Some content is blurred for privacy in your region
 </div>
 
 <div class="admin-login" id="adminLogin" role="dialog" aria-modal="true">
@@ -571,6 +571,11 @@ async function loadStats(){
   err.style.display='none';
   try{
     const r = await fetch(location.origin+'/api/visits/stats',{headers:{'X-Admin-Pass':getPass()}});
+    if(r.status===401){
+      err.textContent = "Couldn't load stats — password doesn't match the server. Re-set it in Settings.";
+      err.style.display='block';
+      return;
+    }
     if(!r.ok) throw new Error();
     const d = await r.json();
     document.getElementById('statToday').textContent = d.today;
@@ -590,6 +595,7 @@ async function loadStats(){
       cs.innerHTML = '<div class="admin-tip">No country data yet.</div>';
     }
   }catch(e){
+    err.textContent = "Couldn't load stats — backend unreachable.";
     err.style.display='block';
   }
 }
@@ -608,9 +614,9 @@ async function changePassword(){
     document.getElementById('newPass').value='';
     showToast('Password updated everywhere');
   }catch(e){
-    try{localStorage.setItem(LS.pass, v)}catch(err){}
-    document.getElementById('newPass').value='';
-    showToast('Saved locally (backend offline)');
+    // Do NOT save locally when the server can't confirm — that would desync
+    // the browser password from the backend and break stats/bookings/uploads.
+    showToast('Backend unreachable — password unchanged');
   }
 }
 

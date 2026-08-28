@@ -1315,7 +1315,7 @@ footer{
     <a href="#candice">ABOUT</a><span class="nav-dot">·</span>
     <a href="#experiences">EXPERIENCES</a><span class="nav-dot">·</span>
     <a href="#gallery">GALLERY</a><span class="nav-dot">·</span>
-    <span data-restrict><a href="#travel">TRAVEL</a><span class="nav-dot">·</span></span>
+    <a href="#travel">TRAVEL</a><span class="nav-dot">·</span>
     <a href="#booking">BOOK</a><span class="nav-dot">·</span>
     <a href="#payments">PAY</a><span class="nav-dot">·</span>
     <a href="#faq">FAQ</a><span class="nav-dot">·</span>
@@ -1501,15 +1501,15 @@ footer{
 </section>
 
 <!-- ============ TRAVEL ============ -->
-<section id="travel" data-restrict="section">
-  <div class="wrap two reveal restrict-hide">
+<section id="travel">
+  <div class="wrap two reveal">
     <div>
       <div class="section-eyebrow">Currently based in</div>
-      <div class="location">
+      <div class="location" data-restrict>
         United Arab<br>Emirates,<br>
         <span class="city">Dubai.</span>
       </div>
-      <div class="availability">
+      <div class="availability" data-restrict>
         <span class="availability-dot"></span>
         Available 24 / 7
       </div>
@@ -1520,7 +1520,7 @@ footer{
         For privacy and safety, I never publish exact addresses, hotel details or coordinates.
       </p>
 
-      <div class="travel-list">
+      <div class="travel-list" data-restrict>
         <div class="travel-row">
           <span class="place serif">Philippines</span>
           <span class="dates">JUL 04 — 13</span>
@@ -1535,17 +1535,9 @@ footer{
         </div>
       </div>
 
-      <a class="btn primary" href="#contact" style="margin-top:32px">
+      <a class="btn primary" href="#contact" style="margin-top:32px" data-restrict>
         <span>Meet me somewhere</span><span class="arrow">→</span>
       </a>
-    </div>
-  </div>
-
-  <div class="wrap restrict-msg" data-testid="travel-restricted-msg">
-    <div class="privacy-panel">
-      <div class="section-eyebrow">Private</div>
-      <h2 class="serif">Kept <span class="it">private</span> in your region.</h2>
-      <p class="lead">For privacy and discretion, my location, availability and travel plans aren't shown here. Everything else on the site remains open to you.</p>
     </div>
   </div>
 </section>
