@@ -69,3 +69,7 @@ State: localStorage keys `candice_admin_pass`, `candice_content`, `candice_media
 - Backstage REQUESTS tab rebuilt: search, sort (newest/oldest/preferred/important/unread), status + important filter, list shows date/time, handle, channel, experience, preferred, status & IMPORTANT badges; click card → full details, copy-contact button, status dropdown, star toggle, delete. Opening a NEW request auto-marks it read.
 - E2E verified on preview (curl + Playwright): submit→saved→appears in inbox with all fields correct→marked important→status confirmed→fresh GET persists both→unauth access 401 on all 4 endpoints→search/sort/filter work→delete works. deployment_agent status: PASS after fix.
 - Live deployment to maisoncandice.com still pending USER action (Deploy on Emergent + link domain).
+
+## 2026-06 — New Request red badge
+- REQUESTS tab shows red count badge (new requests); refreshes on panel open + every 30s while backstage is open. Verified in browser (badge '1' displayed).
+- Go-live still requires USER: Deploy button on Emergent + link maisoncandice.com. Deployment readiness check = PASS. Live smoke test pending domain connection.

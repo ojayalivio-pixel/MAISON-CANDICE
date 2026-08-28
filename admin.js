@@ -86,7 +86,7 @@ function injectAdminHTML(){
 
   <div class="admin-tabs">
     <button class="admin-tab active" data-tab="edit">EDIT</button>
-    <button class="admin-tab" data-tab="requests">REQUESTS</button>
+    <button class="admin-tab" data-tab="requests">REQUESTS<span class="req-tab-badge" id="reqTabBadge" data-testid="requests-new-badge" style="display:none">0</span></button>
     <button class="admin-tab" data-tab="stats">STATS</button>
     <button class="admin-tab" data-tab="geo">COUNTRIES</button>
     <button class="admin-tab" data-tab="settings">SETTINGS</button>
@@ -542,6 +542,24 @@ function openAdmin(){
   renderCountryList();
   updateBlockedCount();
   syncBlockedFromServer();
+  updateReqBadge();
+  if(!window._reqBadgeTimer) window._reqBadgeTimer = setInterval(updateReqBadge, 30000);
+}
+async function updateReqBadge(){
+  if(!isLoggedIn()) return;
+  try{
+    const r = await fetch(MC_BASE()+'/api/bookings',{headers:authHeaders()});
+    if(!r.ok) return;
+    const d = await r.json();
+    reqItems = d.items || [];
+    setReqBadge(d.new_count);
+  }catch(e){}
+}
+function setReqBadge(n){
+  const b = document.getElementById('reqTabBadge');
+  if(!b) return;
+  b.textContent = n;
+  b.style.display = n>0 ? 'inline-flex' : 'none';
 }
 function closeAdmin(){
   document.getElementById('adminPanel').classList.remove('show');
@@ -569,6 +587,7 @@ async function loadRequests(){
     if(!r.ok) throw new Error();
     const d = await r.json();
     reqItems = d.items || [];
+    setReqBadge(d.new_count);
     cnt.textContent = reqItems.length ? (d.new_count+' new · '+reqItems.length+' total') : 'No requests yet';
     renderRequests();
   }catch(e){

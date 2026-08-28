@@ -542,3 +542,10 @@ body.edit-mode [data-link]:hover{outline-color:var(--crimson-hot)}
   flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
   color:var(--cream,#f3e9dc);font-size:11px;padding:7px;border-radius:8px;outline:none
 }
+.req-tab-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:16px;height:16px;padding:0 4px;margin-left:6px;
+  border-radius:10px;background:var(--crimson-hot,#ff2d5f);color:#fff;
+  font-size:9px;font-weight:700;vertical-align:middle;
+  box-shadow:0 0 8px rgba(255,45,95,.6)
+}
