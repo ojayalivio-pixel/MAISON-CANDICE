@@ -100,6 +100,66 @@ class CompleteBody(BaseModel):
     total_chunks: int
 
 
+class BookingBody(BaseModel):
+    name: str
+    channel: str
+    handle: str
+    session_type: str
+    preferred: str = ""
+    message: str = ""
+
+
+class BookingStatusBody(BaseModel):
+    status: str
+
+
+@api.post("/bookings")
+async def create_booking(body: BookingBody):
+    if not body.name.strip() or not body.handle.strip() or not body.message.strip():
+        raise HTTPException(status_code=400, detail="Missing required fields")
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": body.name.strip()[:80],
+        "channel": body.channel.strip()[:40],
+        "handle": body.handle.strip()[:120],
+        "session_type": body.session_type.strip()[:60],
+        "preferred": body.preferred.strip()[:200],
+        "message": body.message.strip()[:1500],
+        "status": "new",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.bookings.insert_one(doc)
+    return {"ok": True}
+
+
+@api.get("/bookings")
+async def list_bookings(x_admin_pass: str = Header(None)):
+    await check_pass(x_admin_pass)
+    items = await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    new_count = await db.bookings.count_documents({"status": "new"})
+    return {"items": items, "new_count": new_count}
+
+
+@api.post("/bookings/{booking_id}/status")
+async def update_booking(booking_id: str, body: BookingStatusBody, x_admin_pass: str = Header(None)):
+    await check_pass(x_admin_pass)
+    if body.status not in ("new", "handled"):
+        raise HTTPException(status_code=400, detail="Invalid status")
+    r = await db.bookings.update_one({"id": booking_id}, {"$set": {"status": body.status}})
+    if r.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"ok": True}
+
+
+@api.delete("/bookings/{booking_id}")
+async def delete_booking(booking_id: str, x_admin_pass: str = Header(None)):
+    await check_pass(x_admin_pass)
+    r = await db.bookings.delete_one({"id": booking_id})
+    if r.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"ok": True}
+
+
 class VisitBody(BaseModel):
     vid: str
     country: str | None = None

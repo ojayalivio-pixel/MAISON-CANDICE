@@ -480,3 +480,19 @@ body.edit-mode [data-link]:hover{outline-color:var(--crimson-hot)}
 .cstat-bar{height:5px;background:var(--panel-3);border-radius:99px;overflow:hidden}
 .cstat-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--crimson),var(--champagne));border-radius:99px}
 .cstat-n{font-size:11px;color:var(--champagne-soft);text-align:right;font-weight:500}
+
+/* booking requests */
+.req-list{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.req-card{padding:16px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px}
+.req-card.unread{border-color:rgba(225,29,72,.55);box-shadow:0 0 18px -8px var(--crimson-glow)}
+.req-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.req-name{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--silk)}
+.req-time{font-size:9px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+.req-meta{margin-top:6px;font-size:11px;color:var(--champagne-soft);letter-spacing:.03em}
+.req-meta b{color:var(--champagne)}
+.req-msg{margin-top:10px;font-size:12px;line-height:1.7;color:var(--muted);white-space:pre-wrap;word-break:break-word}
+.req-actions{display:flex;gap:8px;margin-top:12px;align-items:center}
+.req-btn{padding:7px 13px;border-radius:99px;border:1px solid var(--line-warm);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;transition:.25s}
+.req-btn.done:hover{border-color:var(--champagne);color:var(--champagne)}
+.req-btn.del:hover{border-color:var(--crimson);color:var(--crimson-hot)}
+.req-handled{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}

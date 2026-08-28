@@ -80,6 +80,7 @@ function injectAdminHTML(){
 
   <div class="admin-tabs">
     <button class="admin-tab active" data-tab="edit">EDIT</button>
+    <button class="admin-tab" data-tab="requests">REQUESTS</button>
     <button class="admin-tab" data-tab="stats">STATS</button>
     <button class="admin-tab" data-tab="geo">COUNTRIES</button>
     <button class="admin-tab" data-tab="settings">SETTINGS</button>
@@ -102,6 +103,12 @@ function injectAdminHTML(){
       <div class="admin-label">Reset</div>
       <button class="admin-action-btn danger" id="btnResetText">↺&nbsp;&nbsp;Restore original text</button>
       <button class="admin-action-btn danger" id="btnResetMedia" style="margin-top:8px">↺&nbsp;&nbsp;Remove all uploaded media</button>
+    </div>
+
+    <div class="admin-section" data-section="requests">
+      <div class="blocked-count" id="reqCount">Loading…</div>
+      <div class="req-list" id="reqList"></div>
+      <div class="admin-tip" id="reqErr" style="display:none;color:var(--crimson-hot)">Couldn't load requests — backend unreachable.</div>
     </div>
 
     <div class="admin-section" data-section="stats">
@@ -508,6 +515,52 @@ function switchTab(name){
   document.querySelectorAll('.admin-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.toggle('active', s.dataset.section===name));
   if(name==='stats') loadStats();
+  if(name==='requests') loadRequests();
+}
+async function loadRequests(){
+  const list = document.getElementById('reqList');
+  const err = document.getElementById('reqErr');
+  const cnt = document.getElementById('reqCount');
+  err.style.display='none';
+  try{
+    const r = await fetch(location.origin+'/api/bookings',{headers:{'X-Admin-Pass':getPass()}});
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    cnt.textContent = d.items.length ? (d.new_count+' new · '+d.items.length+' total') : 'No requests yet';
+    list.innerHTML = d.items.map(b=>{
+      const when = new Date(b.created_at).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      return '<div class="req-card '+(b.status==='new'?'unread':'')+'" data-id="'+b.id+'">'
+        + '<div class="req-top"><span class="req-name">'+esc(b.name)+'</span><span class="req-time">'+when+'</span></div>'
+        + '<div class="req-meta">'+esc(b.session_type)+' · '+esc(b.channel)+' → <b>'+esc(b.handle)+'</b></div>'
+        + (b.preferred?'<div class="req-meta">Prefers: '+esc(b.preferred)+'</div>':'')
+        + '<div class="req-msg">'+esc(b.message)+'</div>'
+        + '<div class="req-actions">'
+        + (b.status==='new'?'<button class="req-btn done" data-act="done">✓ Mark handled</button>':'<span class="req-handled">Handled</span>')
+        + '<button class="req-btn del" data-act="del">Delete</button>'
+        + '</div></div>';
+    }).join('');
+    list.querySelectorAll('.req-btn').forEach(btn=>{
+      btn.onclick = async ()=>{
+        const id = btn.closest('.req-card').dataset.id;
+        const act = btn.dataset.act;
+        try{
+          if(act==='del'){
+            if(!confirm('Delete this request?')) return;
+            await fetch(location.origin+'/api/bookings/'+id,{method:'DELETE',headers:{'X-Admin-Pass':getPass()}});
+          } else {
+            await fetch(location.origin+'/api/bookings/'+id+'/status',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Pass':getPass()},body:JSON.stringify({status:'handled'})});
+          }
+          loadRequests();
+        }catch(e){showToast('Action failed')}
+      };
+    });
+  }catch(e){
+    cnt.textContent='—';
+    err.style.display='block';
+  }
+}
+function esc(s){
+  return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 async function loadStats(){
   const err = document.getElementById('statsErr');
