@@ -1,38 +1,614 @@
 <!doctype html>
-<html lang=“en”>
+<html lang="en">
 <head>
-<meta charset=“utf-8”>
-<meta name=“viewport” content=“width=device-width,initial-scale=1”>
-<meta name=“description” content=“Ferragamo — a luxury digital experience.”>
-<title>CANDICE FERRARAMO</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Candice Ferragamo — a luxury digital experience.">
+<title>CANDICE FERRAGAMO</title>
+
 <style>
-:root{—bg:#080808;—panel:#101010;—line:#2a2927;—gold:#d5bb83;—text:#f4efe6;—muted:#aaa49a}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(—bg);color:var(—text);font-family:Arial,Helvetica,sans-serif}
-a{text-decoration:none;color:inherit}.serif{font-family:Georgia,’Times New Roman’,serif}.wrap{width:min(1180px,92%);margin:auto}
-nav{height:76px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;width:100%;z-index:20;padding:0 4%;background:#080808dd;backdrop-filter:blur(16px);border-bottom:1px solid var(—line)}
-.brand{letter-spacing:.28em;font-size:12px}.navlinks{display:flex;gap:20px;font-size:10px;letter-spacing:.13em;color:#c8c2b7}
-.hero{min-height:100vh;display:flex;align-items:end;padding:150px 0 90px;background:radial-gradient(circle at 78% 22%,#4b412e 0%,transparent 30%),radial-gradient(circle at 20% 75%,#1d1811 0%,transparent 25%),linear-gradient(120deg,#080808,#16130f 60%,#080808)}
-.eyebrow{color:var(—gold);font-size:11px;letter-spacing:.25em}.hero h1{font-size:clamp(60px,10vw,145px);line-height:.86;font-weight:400;margin:22px 0}.hero p{max-width:620px;color:#c6c0b6;line-height:1.8;font-size:15px}
-.btn{display:inline-block;border:1px solid var(—gold);padding:15px 21px;margin:12px 8px 0 0;font-size:10px;letter-spacing:.16em;transition:.25s}.btn:hover{background:var(—gold);color:#111}
-section{padding:105px 0;border-top:1px solid var(—line)}h2{font-size:clamp(38px,6vw,76px);font-weight:400;margin:12px 0 25px}.lead{max-width:760px;color:var(—muted);line-height:1.9}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:38px}.card{background:var(—panel);border:1px solid var(—line);padding:24px;min-height:185px}.card h3{font-family:Georgia,serif;font-size:23px;font-weight:400;margin:0 0 13px}.card p{font-size:13px;color:var(—muted);line-height:1.7}
-.media{height:330px;background:linear-gradient(145deg,#27231d,#0e0e0e);border:1px solid var(—line);display:flex;align-items:end;padding:18px;color:#c9bfae;font-size:10px;letter-spacing:.14em}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:60px}.location{font-size:clamp(30px,4vw,55px);font-family:Georgia,serif}
-footer{padding:60px 0;color:#827d74;font-size:11px;letter-spacing:.08em}
-@media(max-width:850px){.navlinks{display:none}.grid{grid-template-columns:1fr}.two{grid-template-columns:1fr;gap:25px}section{padding:75px 0}}
+:root{
+  --bg:#080808;
+  --panel:#101010;
+  --line:#2a2927;
+  --gold:#d5bb83;
+  --text:#f4efe6;
+  --muted:#aaa49a;
+}
+
+*{box-sizing:border-box}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+a{
+  text-decoration:none;
+  color:inherit;
+}
+
+.serif{
+  font-family:Georgia,'Times New Roman',serif;
+}
+
+.wrap{
+  width:min(1180px,92%);
+  margin:auto;
+}
+
+/* NAVIGATION */
+
+nav{
+  height:76px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:fixed;
+  top:0;
+  width:100%;
+  z-index:20;
+  padding:0 4%;
+  background:#080808dd;
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+}
+
+.brand{
+  letter-spacing:.28em;
+  font-size:12px;
+}
+
+.navlinks{
+  display:flex;
+  gap:20px;
+  font-size:10px;
+  letter-spacing:.13em;
+  color:#c8c2b7;
+}
+
+.navlinks a:hover{
+  color:var(--gold);
+}
+
+/* HERO */
+
+.hero{
+  min-height:100vh;
+  display:flex;
+  align-items:end;
+  padding:150px 0 90px;
+  background:
+    radial-gradient(circle at 78% 22%,#4b412e 0%,transparent 30%),
+    radial-gradient(circle at 20% 75%,#1d1811 0%,transparent 25%),
+    linear-gradient(120deg,#080808,#16130f 60%,#080808);
+}
+
+.eyebrow{
+  color:var(--gold);
+  font-size:11px;
+  letter-spacing:.25em;
+}
+
+.hero h1{
+  font-size:clamp(60px,10vw,145px);
+  line-height:.86;
+  font-weight:400;
+  margin:22px 0;
+}
+
+.hero p{
+  max-width:620px;
+  color:#c6c0b6;
+  line-height:1.8;
+  font-size:15px;
+}
+
+/* BUTTONS */
+
+.btn{
+  display:inline-block;
+  border:1px solid var(--gold);
+  padding:15px 21px;
+  margin:12px 8px 0 0;
+  font-size:10px;
+  letter-spacing:.16em;
+  transition:.25s;
+  cursor:pointer;
+  background:transparent;
+  color:var(--text);
+}
+
+.btn:hover{
+  background:var(--gold);
+  color:#111;
+}
+
+/* SECTIONS */
+
+section{
+  padding:105px 0;
+  border-top:1px solid var(--line);
+}
+
+h2{
+  font-size:clamp(38px,6vw,76px);
+  font-weight:400;
+  margin:12px 0 25px;
+}
+
+.lead{
+  max-width:760px;
+  color:var(--muted);
+  line-height:1.9;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-top:38px;
+}
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  padding:24px;
+  min-height:185px;
+}
+
+.card h3{
+  font-family:Georgia,serif;
+  font-size:23px;
+  font-weight:400;
+  margin:0 0 13px;
+}
+
+.card p{
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.7;
+}
+
+.media{
+  min-height:330px;
+  background:linear-gradient(145deg,#27231d,#0e0e0e);
+  border:1px solid var(--line);
+  display:flex;
+  align-items:end;
+  padding:18px;
+  color:#c9bfae;
+  font-size:10px;
+  letter-spacing:.14em;
+  overflow:hidden;
+  position:relative;
+}
+
+.media img,
+.media video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  position:absolute;
+  inset:0;
+}
+
+.media-label{
+  position:relative;
+  z-index:2;
+  background:#080808bb;
+  padding:8px 10px;
+}
+
+.two{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:60px;
+}
+
+.location{
+  font-size:clamp(30px,4vw,55px);
+  font-family:Georgia,serif;
+}
+
+/* ADMIN NOTICE */
+
+.admin-notice{
+  margin-top:25px;
+  padding:18px;
+  border:1px solid var(--line);
+  background:#0d0d0d;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.7;
+}
+
+.admin-notice strong{
+  color:var(--gold);
+}
+
+/* CONTACTS */
+
+.contact-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:25px;
+}
+
+/* FOOTER */
+
+footer{
+  padding:60px 0;
+  color:#827d74;
+  font-size:11px;
+  letter-spacing:.08em;
+}
+
+/* MOBILE */
+
+@media(max-width:850px){
+  .navlinks{
+    display:none;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .two{
+    grid-template-columns:1fr;
+    gap:25px;
+  }
+
+  section{
+    padding:75px 0;
+  }
+}
 </style>
 </head>
+
 <body>
+
+<!-- =========================
+     PUBLIC NAVIGATION
+     ========================= -->
+
 <nav>
-<a class=“brand serif” href=“#home”>MAISON FERRARAMO</a>
-<div class=“navlinks”><a href=“#ferragamo”>FERRAGAMO</a><a href=“#experiences”>EXPERIENCES</a><a href=“#gallery”>GALLERY</a><a href=“#videos”>VIDEOS</a><a href=“#travel”>TRAVEL</a><a href=“#contact”>CONTACT</a></div>
+  <a class="brand serif" href="#home">CANDICE FERRAGAMO</a>
+
+  <div class="navlinks">
+    <a href="#candice">CANDICE</a>
+    <a href="#experiences">EXPERIENCES</a>
+    <a href="#gallery">GALLERY</a>
+    <a href="#videos">VIDEOS</a>
+    <a href="#travel">TRAVEL</a>
+    <a href="#contact">CONTACT</a>
+  </div>
 </nav>
 
 <main>
-<section class=“hero” id=“home”>
-<div class=“wrap”>
-<div class=“eyebrow”>EXCLUSIVE · ELEGANT · INTERNATIONAL</div>
-<h1 class=“serif”>WELCOME TO<br>MAISON FERRARAMO</h1>
-<p>A private world of digital experiences, personal connection, and unforgettable moments.</p>
+
+<!-- =========================
+     HOMEPAGE
+     ========================= -->
+
+<section class="hero" id="home">
+  <div class="wrap">
+
+    <div class="eyebrow">
+      EXCLUSIVE · ELEGANT · INTERNATIONAL
+    </div>
+
+    <h1 class="serif">
+      WELCOME TO<br>
+      CANDICE FERRAGAMO
+    </h1>
+
+    <p>
+      A private world of digital experiences, personal connection,
+      and unforgettable moments.
+    </p>
+
+    <a class="btn" href="#candice">
+      ENTER CANDICE — VIRTUAL
+    </a>
+
+    <a class="btn" href="#contact">
+      MAKE AN ENQUIRY
+    </a>
+
+  </div>
 </section>
+
+<!-- =========================
+     CANDICE PERSONA
+     ========================= -->
+
+<section id="candice">
+  <div class="wrap two">
+
+    <div>
+      <div class="eyebrow">
+        CANDICE — WITHOUT BORDERS
+      </div>
+
+      <h2 class="serif">
+        Live. Personal.<br>
+        Without Borders.
+      </h2>
+    </div>
+
+    <div class="lead">
+      Candice is a sophisticated digital persona available to a global
+      audience through live entertainment, personal interaction,
+      exclusive content, fantasy, performance, and virtual experiences.
+      This website is designed to feel private, cinematic,
+      international, and effortless to navigate.
+    </div>
+
+  </div>
+</section>
+
+<!-- =========================
+     EXPERIENCES
+     ========================= -->
+
+<section id="experiences">
+  <div class="wrap">
+
+    <div class="eyebrow">
+      SIGNATURE EXPERIENCES
+    </div>
+
+    <h2 class="serif">
+      Curated for Candice.
+    </h2>
+
+    <div class="grid">
+
+      <div class="card">
+        <h3>Live Webcam Shows</h3>
+        <p>Personal live entertainment and interactive digital experiences.</p>
+      </div>
+
+      <div class="card">
+        <h3>Private Shows</h3>
+        <p>Exclusive one-to-one sessions arranged through your preferred platform.</p>
+      </div>
+
+      <div class="card">
+        <h3>Virtual Dates</h3>
+        <p>Personal connection designed for an international audience.</p>
+      </div>
+
+      <div class="card">
+        <h3>Roleplay &amp; Fantasy</h3>
+        <p>Customisable creative experiences, subject to boundaries and platform rules.</p>
+      </div>
+
+      <div class="card">
+        <h3>Voice &amp; ASMR</h3>
+        <p>Personalised audio-focused experiences and fantasy interaction.</p>
+      </div>
+
+      <div class="card">
+        <h3>A Tailored Experience</h3>
+        <p>A flexible card for your own description, media and enquiry link.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- =========================
+     GALLERY
+     ONLY THE REPOSITORY OWNER
+     CAN REPLACE THESE FILES
+     ========================= -->
+
+<section id="gallery">
+  <div class="wrap">
+
+    <div class="eyebrow">
+      EDITORIAL COLLECTIONS
+    </div>
+
+    <h2 class="serif">
+      Gallery &amp; Private Media
+    </h2>
+
+    <p class="lead">
+      Featured photography and selected visual collections from the world of Candice.
+    </p>
+
+    <div class="grid">
+
+      <div class="media">
+        <!-- ADMIN: Replace with your image file -->
+        <!-- <img src="images/candice-virtual.jpg" alt="Candice Virtual"> -->
+        <span class="media-label">CANDICE — VIRTUAL</span>
+      </div>
+
+      <div class="media">
+        <!-- ADMIN: Replace with your image file -->
+        <span class="media-label">EDITORIAL &amp; PORTRAITS</span>
+      </div>
+
+      <div class="media">
+        <!-- ADMIN: Replace with your image file -->
+        <span class="media-label">TRAVEL DIARIES</span>
+      </div>
+
+      <div class="media">
+        <!-- ADMIN: Replace with your image file -->
+        <span class="media-label">BEHIND THE SCENES</span>
+      </div>
+
+      <div class="media">
+        <!-- ADMIN: Replace with your image file -->
+        <span class="media-label">EXCLUSIVE PREVIEWS</span>
+      </div>
+
+      <div class="media">
+        <!-- ADMIN: Replace with your image file -->
+        <span class="media-label">FEATURED MOMENTS</span>
+      </div>
+
+    </div>
+
+    <div class="admin-notice">
+      <strong>MEDIA MANAGEMENT:</strong>
+      Photos can only be changed by someone with authorized access to
+      the website's source repository. Public visitors cannot upload,
+      replace, or delete gallery content.
+    </div>
+
+  </div>
+</section>
+
+<!-- =========================
+     VIDEO
+     ========================= -->
+
+<section id="videos">
+  <div class="wrap">
+
+    <div class="eyebrow">
+      NOW PLAYING
+    </div>
+
+    <h2 class="serif">
+      Featured Video.
+    </h2>
+
+    <div class="media" style="min-height:420px">
+
+      <!-- ADMIN: Replace this with your own video -->
+      <!--
+      <video controls playsinline poster="images/video-thumbnail.jpg">
+        <source src="videos/featured-video.mp4" type="video/mp4">
+      </video>
+      -->
+
+      <span class="media-label">
+        FEATURED VIDEO — CANDICE FERRAGAMO
+      </span>
+
+    </div>
+
+    <div class="admin-notice">
+      <strong>VIDEO MANAGEMENT:</strong>
+      Video files can only be replaced or added by an authorized
+      repository administrator. Website visitors have viewing access only.
+    </div>
+
+  </div>
+</section>
+
+<!-- =========================
+     TRAVEL
+     ========================= -->
+
+<section id="travel">
+  <div class="wrap two">
+
+    <div>
+      <div class="eyebrow">
+        CURRENTLY AVAILABLE IN
+      </div>
+
+      <div class="location">
+        YOUR CURRENT<br>
+        GENERAL LOCATION
+      </div>
+    </div>
+
+    <p class="lead">
+      Display only the country, city, or general area you manually choose.
+      Never publish exact GPS coordinates, hotel information,
+      residence details, or an exact address.
+    </p>
+
+  </div>
+</section>
+
+<!-- =========================
+     CONTACT
+     ========================= -->
+
+<section id="contact">
+  <div class="wrap">
+
+    <div class="eyebrow">
+      PRIVATE CONNECTIONS
+    </div>
+
+    <h2 class="serif">
+      Make an Enquiry.
+    </h2>
+
+    <p class="lead">
+      Connect with Candice through the selected contact methods below.
+    </p>
+
+    <div class="contact-list">
+
+      <!-- ADMIN: Replace only these links with your real contact details -->
+
+      <a class="btn" href="mailto:your@email.com">
+        EMAIL CANDICE
+      </a>
+
+      <a class="btn" href="#">
+        WHATSAPP
+      </a>
+
+      <a class="btn" href="#">
+        VIBER
+      </a>
+
+      <a class="btn" href="#">
+        SNAPCHAT
+      </a>
+
+      <a class="btn" href="#">
+        WECHAT
+      </a>
+
+      <a class="btn" href="#">
+        LIVEJASMIN
+      </a>
+
+      <a class="btn" href="#">
+        CHATURBATE
+      </a>
+
+    </div>
+
+    <div class="admin-notice">
+      <strong>CONTACT MANAGEMENT:</strong>
+      Contact links are controlled by the website owner through authorized
+      access to the source repository. Visitors cannot edit, submit,
+      or change your published contact information.
+    </div>
+
+  </div>
+</section>
+
 </main>
+
+<footer>
+  <div class="wrap">
+    CANDICE FERRAGAMO · CANDICE — WITHOUT BORDERS · © 2026
+  </div>
+</footer>
+
+</body>
+</html>
