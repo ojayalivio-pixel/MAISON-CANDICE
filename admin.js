@@ -128,11 +128,12 @@ function injectAdminHTML(){
     </div>
 
     <div class="admin-section" data-section="geo">
-      <div class="admin-tip">Blocked visitors see a "not available in your region" screen. Detection uses their public IP.</div>
+      <div class="admin-tip">Blocked visitors still see your site, but the escort / in-person details (location, travel dates, availability, the in-person options) are blurred out. Everything else stays readable. Detection uses their public IP.</div>
       <div class="blocked-count" id="blockedCount">0 countries blocked</div>
       <input type="text" class="country-search" id="countrySearch" placeholder="Search country…">
       <div class="country-list" id="countryList"></div>
-      <div class="admin-tip warn" style="margin-top:12px">Tip: your own visits are exempt on this device while you're logged in to backstage.</div>
+      <button class="admin-btn" id="btnPreviewGeo" data-testid="preview-blocked-btn" style="margin-top:14px;width:100%">👁 Preview as blocked country</button>
+      <div class="admin-tip warn" style="margin-top:12px">Tip: your own visits are exempt on this device while you're logged in to backstage. Use the preview button above to see exactly what a blocked visitor sees.</div>
     </div>
 
     <div class="admin-section" data-section="settings">
@@ -771,6 +772,13 @@ function bindHandlers(){
   document.getElementById('btnExport').onclick      = exportSite;
   document.getElementById('editStatus').onclick     = toggleEditMode;
   document.getElementById('countrySearch').oninput  = renderCountryList;
+
+  const pvBtn = document.getElementById('btnPreviewGeo');
+  if(pvBtn) pvBtn.onclick = () => {
+    const on = document.body.classList.toggle('geo-blur');
+    pvBtn.textContent = on ? '✕ Exit preview' : '👁 Preview as blocked country';
+    pvBtn.classList.toggle('active', on);
+  };
 
   document.querySelectorAll('.admin-tab').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
   document.querySelectorAll('.media-tab').forEach(b=>b.onclick=()=>setMediaTab(b.dataset.mtab));
