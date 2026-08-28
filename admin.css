@@ -22,11 +22,7 @@ body.geo-blocked > *:not(.geo-block){display:none !important}
 /* Sensitive bits (in-person card, booking toggle, travel location/dates/availability/meet button) */
 /* are blurred but still visible; all non-explicit content stays fully readable.                 */
 body.geo-blur [data-restrict]{
-  filter:blur(12px) !important;
-  pointer-events:none !important;
-  user-select:none !important;
-  -webkit-user-select:none !important;
-  transition:filter .3s ease;
+  display:none !important;
 }
 
 body.geo-blur .geo-blur-banner{display:flex}

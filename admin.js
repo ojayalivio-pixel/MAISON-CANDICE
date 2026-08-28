@@ -60,7 +60,7 @@ function injectAdminHTML(){
 </div>
 
 <div class="geo-blur-banner" id="geoBlurBanner" data-testid="geo-blur-banner">
-  <span class="gbb-dot"></span>Some content is blurred for privacy in your region
+  <span class="gbb-dot"></span>Some content is hidden for privacy in your region
 </div>
 
 <div class="admin-login" id="adminLogin" role="dialog" aria-modal="true">
