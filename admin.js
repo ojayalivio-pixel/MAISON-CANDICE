@@ -4,7 +4,7 @@
    in the DOM until this script runs and injects it.
 
    Trigger: Ctrl / Cmd + Shift + K   or add #backstage to URL
-   Default password: candice2026  (change inside → Settings)
+   Login is verified server-side (JWT). Change the password inside → Settings.
    ========================================================= */
 (function(){
 
@@ -138,6 +138,7 @@ function injectAdminHTML(){
 
     <div class="admin-section" data-section="settings">
       <div class="admin-label">Change admin password</div>
+      <input type="password" class="admin-input" id="curPass" placeholder="Current password" autocomplete="current-password" style="margin-bottom:8px">
       <input type="password" class="admin-input" id="newPass" placeholder="New password" autocomplete="new-password">
       <div class="admin-row">
         <button class="admin-btn" id="btnSavePass">SAVE PASSWORD</button>
@@ -614,22 +615,22 @@ async function loadStats(){
   }
 }
 async function changePassword(){
+  const cur = document.getElementById('curPass').value;
   const v = document.getElementById('newPass').value.trim();
-  if(v.length<4){showToast('Too short');return;}
+  if(v.length<4){showToast('New password too short');return;}
+  if(!cur){showToast('Enter your current password');return;}
   try{
     const r = await fetch(location.origin+'/api/admin/password',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({current:getPass(), new:v})
+      headers:authHeaders({'Content-Type':'application/json'}),
+      body:JSON.stringify({current:cur, new:v})
     });
-    if(r.status===401){showToast('Backend rejected current password');return;}
+    if(r.status===401){showToast('Wrong current password');return;}
     if(!r.ok){showToast('Server error — try again');return;}
-    try{localStorage.setItem(LS.pass, v)}catch(e){}
+    document.getElementById('curPass').value='';
     document.getElementById('newPass').value='';
-    showToast('Password updated everywhere');
+    showToast('Password updated');
   }catch(e){
-    // Do NOT save locally when the server can't confirm — that would desync
-    // the browser password from the backend and break stats/bookings/uploads.
     showToast('Backend unreachable — password unchanged');
   }
 }
@@ -765,9 +766,8 @@ async function exportSite(){
   const stateBoot = `
 <script>
 (function(){try{
-  var K={pass:'candice_admin_pass',content:'candice_content',media:'candice_media',links:'candice_links',blocked:'candice_blocked_countries'};
+  var K={content:'candice_content',media:'candice_media',links:'candice_links',blocked:'candice_blocked_countries'};
   if(!localStorage.getItem(K.blocked)) localStorage.setItem(K.blocked, ${JSON.stringify(localStorage.getItem(LS.blocked)||'[]')});
-  if(!localStorage.getItem(K.pass))    localStorage.setItem(K.pass,    ${JSON.stringify(getPass())});
   if(!localStorage.getItem(K.content)) localStorage.setItem(K.content, ${JSON.stringify(localStorage.getItem(LS.content)||'{}')});
   if(!localStorage.getItem(K.media))   localStorage.setItem(K.media,   ${JSON.stringify(localStorage.getItem(LS.media)||'{}')});
   if(!localStorage.getItem(K.links))   localStorage.setItem(K.links,   ${JSON.stringify(localStorage.getItem(LS.links)||'{}')});

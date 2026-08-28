@@ -1,0 +1,44 @@
+{
+  "summary": "SEC-001 (server-side JWT admin auth) verified. 33/33 pytest cases pass on the public preview URL, plus full frontend Backstage flow (wrong-pw error, correct-pw JWT stored in sessionStorage, STATS loads via Bearer, COUNTRIES block/unblock persists via server, logout clears token). Password remains 'candice2026' (change_password roundtrip test restored it). Brute-force lockout verified as the LAST test in pytest; login_attempts collection was cleared with mongosh afterwards so subsequent logins work.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sec001_auth.py",
+    "/app/test_reports/pytest/iteration_12.xml"
+  ],
+  "verification_details": {
+    "LOGIN": "POST /api/admin/login {password:'candice2026'} -> 200 with valid JWT (3-part, expires_in=43200). Wrong pw -> 401. Missing field -> 422.",
+    "JWT_PROTECTION": "For each of GET /api/bookings, GET /api/visits/stats, POST /api/blocked-countries, POST /api/media/upload/init: no Authorization -> 401; old-scheme 'X-Admin-Pass: candice2026' -> 401 (old scheme removed); garbage 'Bearer garbage.token.here' -> 401; valid Bearer -> 200 with correct payload.",
+    "CHANGE_PASSWORD": "Without Bearer -> 401. With Bearer + wrong current -> 401. Roundtrip test (candice2026 -> temp -> candice2026) succeeded; final state confirmed by re-login with 'candice2026' returning 200.",
+    "PUBLIC_ENDPOINTS": "GET /api/blocked-countries 200, GET /api/geo 200, POST /api/visits 200, POST /api/bookings 200 (single call).",
+    "BOOKING_RATE_LIMIT": "6 rapid POST /api/bookings from same IP -> 429 observed within the 6 attempts. Created test bookings cleaned up via DELETE /api/bookings/{id} with Bearer.",
+    "NO_SECRET_IN_CLIENT": "GET /admin.js contains neither 'candice2026' nor 'X-Admin-Pass'. GET /backend/.env returns HTML fallback, no MONGO_URL/JWT_SECRET/candice2026.",
+    "BRUTE_FORCE_LOCKOUT": "5 wrong logins from same IP -> 6th attempt with correct password returned 429 as expected. login_attempts DB cleared afterwards (mongosh db.login_attempts.deleteMany({})).",
+    "FRONTEND_FLOW": "Ctrl+Shift+K opens #adminLogin. Wrong pw -> #adminErr='Wrong password.', #adminPanel stays closed. 'candice2026'+Enter -> sessionStorage 'candice_admin_token' set (JWT, 147 chars, 3 parts), #adminPanel opens. STATS tab -> #statsErr hidden, stat numbers rendered (today=53, week=53, all=53, uses Bearer). COUNTRIES tab: click AF -> GET /api/blocked-countries shows ['AF'] (persisted server-side); click AF again -> [] (unblocked). SETTINGS -> Log out clears sessionStorage token."
+  },
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Booking rate limiter uses in-memory _rl_buckets dict — resets on process restart and does not span multiple backend workers. Fine for single-process gunicorn/uvicorn, but note if scaling out. Consider Mongo-backed limiter like login_attempts for consistency.",
+    "_rl_buckets grows unbounded (one deque per key+IP forever). Low-severity memory leak on long uptime; consider periodic pruning of empty deques.",
+    "Startup uses deprecated @app.on_event('startup'/'shutdown'); switch to FastAPI lifespan context for forward-compat.",
+    "get_admin_hash() is called on every login and every password change — cheap, but could be cached in-process; not critical.",
+    "Login lockout is per-IP only; behind ingress the _client_ip() correctly reads X-Forwarded-For first entry, but no upstream trust boundary check. If ingress ever forwards client-controlled XFF, an attacker could rotate the header to bypass the 5/15min limit. Consider trusting only the last hop or configuring the proxy to overwrite XFF."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_sec001_auth.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "Admin password: candice2026 (restored). JWT stored in sessionStorage as 'candice_admin_token'.",
+  "seed_data_creation": "During tests: transient booking rows with name prefix 'TEST_rl_' / 'TEST_public_' — all deleted afterward via DELETE /api/bookings/{id} with Bearer token. login_attempts collection cleared post-run via mongosh.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "SEC-001 fully verified. Regression suite lives at /app/backend/tests/test_sec001_auth.py (33 tests). NOTE: the brute-force test class TestZzzBruteForceLockout locks the executing IP for 15 min; the file cleans up login_attempts is NOT automatic — if you re-run and cannot log in, run: mongosh mongodb://localhost:27017/candice_database --eval 'db.login_attempts.deleteMany({})'. The booking rate-limit test relies on in-memory bucket which resets only on backend restart; if re-run within an hour without restart it may 429 immediately (test handles this by only asserting a 429 occurs within 6 attempts).",
+  "rca of the issue": "N/A — no bugs found."
+}
