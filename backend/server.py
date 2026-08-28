@@ -323,6 +323,16 @@ async def geo(request: Request):
     return {"country_code": cc, "country": country}
 
 
+@api.get("/geo-check")
+async def geo_check(request: Request):
+    doc = await db.settings.find_one({"key": "blocked_countries"})
+    blocked = (doc or {}).get("value") or []
+    g = await geo(request)
+    cc = g["country_code"]
+    restricted = bool(blocked) and (not cc or cc in blocked)
+    return {"country_code": cc, "country": g["country"], "restricted": restricted}
+
+
 
 @api.post("/media/upload/init")
 async def upload_init(body: InitBody, _: bool = Depends(require_admin)):

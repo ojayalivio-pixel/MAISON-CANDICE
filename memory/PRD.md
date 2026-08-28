@@ -55,3 +55,10 @@ State: localStorage keys `candice_admin_pass`, `candice_content`, `candice_media
 - 2026-06: Added experience cards: 07 BDSM & Domination, 08 Findom, 09 Slave Training
 - 2026-06: Full admin flow verified via testing agent (13/13 PASS, /app/test_reports/iteration_1.json)
 - 2026-06: Hero accent line changed from "darling." to "candice ferragamo."
+
+## 2026-06 fork — Final priority repair (3 critical systems)
+- ROOT CAUSE (P1 & P2): maisoncandice.com is a STATIC Vercel deploy — every /api route 404s there. Frontend code was fine; there is simply no backend at that domain.
+- FIXED fail-open privacy: html tag now ships with class `mc-geo-pending` + head CSS hides all [data-restrict] before first paint (no flash). New backend `GET /api/geo-check` returns {country_code, country, restricted}. admin.js enforceGeoBlock rewritten: logged-in owner → reveal; restricted → hide sensitive + banner; API unreachable (1 retry) → FAIL-SAFE hide sensitive + banner; 12s watchdog in index.html guarantees page never stays fully locked.
+- Added `window.MC_API_BASE` (head of index.html, default "") — all API calls in index.html + admin.js use (MC_API_BASE || location.origin), so a static Vercel copy can point at a separately deployed backend.
+- Verified in preview (curl + Playwright): no-flash, blocked view, fail-safe view, allowed view, country add→persist→remove→persist, geo-check AE=restricted, booking POST→appears in admin REQUESTS→delete OK. Contact links: all 200 (t.me valid acct, wa.me, snapchat, livejasmin, chaturbate, wise); domain has Cloudflare MX (email routing exists); Teams/WeChat intentionally non-clickable.
+- LIVE STATUS: NOT VERIFIED — requires user to deploy full app via Emergent Deploy and link maisoncandice.com (or set MC_API_BASE in the Vercel copy to the deployed backend URL). Until then the live static site fail-safes: sensitive sections hidden for everyone + privacy banner.

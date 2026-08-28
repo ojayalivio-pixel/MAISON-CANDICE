@@ -8,6 +8,8 @@
    ========================================================= */
 (function(){
 
+function MC_BASE(){return window.MC_API_BASE || location.origin;}
+
 const LS = {
   token:'candice_admin_token',
   session:'candice_admin_session',
@@ -405,7 +407,7 @@ function setMediaTab(name){
 }
 /* ---------- Cloud upload (chunked, bypasses proxy limits) ---------- */
 async function uploadToCloud(file, onProgress){
-  const API = location.origin;
+  const API = MC_BASE();
   const headers = {'Authorization': 'Bearer '+getToken()};
   const initR = await fetch(API+'/api/media/upload/init',{
     method:'POST',
@@ -499,7 +501,7 @@ async function submitAdminLogin(){
   const errEl = document.getElementById('adminErr');
   errEl.textContent = 'Checking…';
   try{
-    const r = await fetch(location.origin+'/api/admin/login',{
+    const r = await fetch(MC_BASE()+'/api/admin/login',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({password:v})
@@ -542,7 +544,7 @@ async function loadRequests(){
   const cnt = document.getElementById('reqCount');
   err.style.display='none';
   try{
-    const r = await fetch(location.origin+'/api/bookings',{headers:authHeaders()});
+    const r = await fetch(MC_BASE()+'/api/bookings',{headers:authHeaders()});
     if(!r.ok) throw new Error();
     const d = await r.json();
     cnt.textContent = d.items.length ? (d.new_count+' new · '+d.items.length+' total') : 'No requests yet';
@@ -565,9 +567,9 @@ async function loadRequests(){
         try{
           if(act==='del'){
             if(!confirm('Delete this request?')) return;
-            await fetch(location.origin+'/api/bookings/'+id,{method:'DELETE',headers:authHeaders()});
+            await fetch(MC_BASE()+'/api/bookings/'+id,{method:'DELETE',headers:authHeaders()});
           } else {
-            await fetch(location.origin+'/api/bookings/'+id+'/status',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({status:'handled'})});
+            await fetch(MC_BASE()+'/api/bookings/'+id+'/status',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),body:JSON.stringify({status:'handled'})});
           }
           loadRequests();
         }catch(e){showToast('Action failed')}
@@ -585,7 +587,7 @@ async function loadStats(){
   const err = document.getElementById('statsErr');
   err.style.display='none';
   try{
-    const r = await fetch(location.origin+'/api/visits/stats',{headers:authHeaders()});
+    const r = await fetch(MC_BASE()+'/api/visits/stats',{headers:authHeaders()});
     if(r.status===401){
       err.textContent = "Couldn't load stats — password doesn't match the server. Re-set it in Settings.";
       err.style.display='block';
@@ -620,7 +622,7 @@ async function changePassword(){
   if(v.length<4){showToast('New password too short');return;}
   if(!cur){showToast('Enter your current password');return;}
   try{
-    const r = await fetch(location.origin+'/api/admin/password',{
+    const r = await fetch(MC_BASE()+'/api/admin/password',{
       method:'POST',
       headers:authHeaders({'Content-Type':'application/json'}),
       body:JSON.stringify({current:cur, new:v})
@@ -642,7 +644,7 @@ function getBlocked(){try{return JSON.parse(localStorage.getItem(LS.blocked)||'[
 function setBlocked(list){try{localStorage.setItem(LS.blocked, JSON.stringify(list))}catch(e){}}
 async function syncBlockedFromServer(){
   try{
-    const r = await fetch(location.origin+'/api/blocked-countries',{cache:'no-store'});
+    const r = await fetch(MC_BASE()+'/api/blocked-countries',{cache:'no-store'});
     if(r.ok){ const d = await r.json(); setBlocked(d.countries||[]); renderCountryList(); updateBlockedCount(); }
   }catch(e){}
 }
@@ -654,7 +656,7 @@ async function toggleBlocked(code){
   renderCountryList();
   updateBlockedCount();
   try{
-    const r = await fetch(location.origin+'/api/blocked-countries',{
+    const r = await fetch(MC_BASE()+'/api/blocked-countries',{
       method:'POST',
       headers:authHeaders({'Content-Type':'application/json'}),
       body:JSON.stringify({countries:b})
@@ -687,26 +689,29 @@ function renderCountryList(){
     r.addEventListener('click',()=>toggleBlocked(r.dataset.code));
   });
 }
+function mcReveal(){document.documentElement.classList.remove('mc-geo-pending');}
 async function enforceGeoBlock(){
-  if(isLoggedIn()) return;
-  let blocked = [];
-  try{
-    const r = await fetch(location.origin+'/api/blocked-countries',{cache:'no-store'});
-    if(r.ok){ const d = await r.json(); blocked = d.countries||[]; }
-    else blocked = getBlocked();
-  }catch(e){ blocked = getBlocked(); }
-  if(!blocked.length) return;
-  try{
-    const r = await fetch(location.origin+'/api/geo', {cache:'no-store'});
-    const d = await r.json();
-    const code = (d.country_code||'').toUpperCase();
-    if(code && blocked.includes(code)){
-      const name = (COUNTRIES.find(c=>c[0]===code)||[])[1] || code;
+  if(isLoggedIn()){ mcReveal(); return; }
+  let ok=false, restricted=false, country='';
+  for(let i=0;i<2 && !ok;i++){
+    try{
+      const r = await fetch(MC_BASE()+'/api/geo-check',{cache:'no-store'});
+      if(!r.ok) throw new Error('bad status');
+      const d = await r.json();
+      restricted = !!d.restricted;
+      country = d.country || d.country_code || '';
+      ok = true;
+    }catch(e){ if(i===0) await new Promise(res=>setTimeout(res,1200)); }
+  }
+  if(!ok) restricted = true; /* fail-safe: never expose sensitive content if the check can't run */
+  if(restricted){
+    if(country){
       const cEl = document.getElementById('geoCountry');
-      if(cEl) cEl.textContent = name;
-      restrictSensitive();
+      if(cEl) cEl.textContent = country;
     }
-  }catch(e){}
+    restrictSensitive();
+  }
+  mcReveal();
 }
 
 /* Apply country privacy: hide escort / in-person tells, remove in-person options */
@@ -717,6 +722,7 @@ function restrictSensitive(){
   });
 }
 window.enforceGeoBlock = enforceGeoBlock;
+window.mcReveal = mcReveal;
 window.restrictSensitive = restrictSensitive;
 
 /* =========================================================
