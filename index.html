@@ -17,7 +17,6 @@
 }
 
 *{box-sizing:border-box}
-
 html{scroll-behavior:smooth}
 
 body{
@@ -28,15 +27,12 @@ body{
 }
 
 a{text-decoration:none;color:inherit}
-
 .serif{font-family:Georgia,'Times New Roman',serif}
 
 .wrap{
   width:min(1180px,92%);
   margin:auto;
 }
-
-/* NAVIGATION */
 
 nav{
   height:76px;
@@ -67,8 +63,6 @@ nav{
 }
 
 .navlinks a:hover{color:var(--gold)}
-
-/* HERO */
 
 .hero{
   min-height:100vh;
@@ -101,8 +95,6 @@ nav{
   font-size:15px;
 }
 
-/* BUTTONS */
-
 .btn{
   display:inline-block;
   border:1px solid var(--gold);
@@ -120,8 +112,6 @@ nav{
   background:var(--gold);
   color:#111;
 }
-
-/* SECTIONS */
 
 section{
   padding:105px 0;
@@ -166,8 +156,6 @@ h2{
   color:var(--muted);
   line-height:1.7;
 }
-
-/* MEDIA */
 
 .media{
   min-height:330px;
@@ -238,30 +226,17 @@ h2{
   transform:translateY(-2px);
 }
 
-.contact-icon{
-  width:32px;
-  height:32px;
-  flex:0 0 32px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--gold);
-  border:1px solid #3b362d;
-  border-radius:50%;
+.brand-logo{
+  width:28px;
+  height:28px;
+  flex:0 0 28px;
+  object-fit:contain;
+  display:block;
 }
 
-.contact-icon svg{
-  width:16px;
-  height:16px;
-  fill:currentColor;
-}
-
-.contact-icon .stroke{
-  fill:none;
-  stroke:currentColor;
-  stroke-width:1.8;
-  stroke-linecap:round;
-  stroke-linejoin:round;
+.logo-wide{
+  width:38px;
+  flex-basis:38px;
 }
 
 /* FOOTER */
@@ -323,7 +298,6 @@ footer{
 
 <section id="candice">
   <div class="wrap two">
-
     <div>
       <div class="eyebrow">CANDICE — WITHOUT BORDERS</div>
 
@@ -340,7 +314,6 @@ footer{
       This website is designed to feel private, cinematic,
       international, and effortless to navigate.
     </div>
-
   </div>
 </section>
 
@@ -351,7 +324,6 @@ footer{
     <h2 class="serif">Curated for Candice.</h2>
 
     <div class="grid">
-
       <div class="card">
         <h3>Live Webcam Shows</h3>
         <p>Personal live entertainment and interactive digital experiences.</p>
@@ -381,7 +353,6 @@ footer{
         <h3>A Tailored Experience</h3>
         <p>A flexible experience shaped around your preferences and my boundaries.</p>
       </div>
-
     </div>
   </div>
 </section>
@@ -404,26 +375,22 @@ footer{
       <div class="media"><span class="media-label">EXCLUSIVE PREVIEWS</span></div>
       <div class="media"><span class="media-label">FEATURED MOMENTS</span></div>
     </div>
-
   </div>
 </section>
 
 <section id="videos">
   <div class="wrap">
-
     <div class="eyebrow">NOW PLAYING</div>
     <h2 class="serif">Featured Video.</h2>
 
     <div class="media" style="min-height:420px">
       <span class="media-label">FEATURED VIDEO — CANDICE FERRAGAMO</span>
     </div>
-
   </div>
 </section>
 
 <section id="travel">
   <div class="wrap two">
-
     <div>
       <div class="eyebrow">CURRENTLY AVAILABLE IN</div>
 
@@ -438,16 +405,13 @@ footer{
       For privacy and security, I never publicly display exact GPS coordinates,
       hotel details, residence information, or an exact address.
     </p>
-
   </div>
 </section>
 
-<!-- CONTACT SECTION -->
 <section id="contact">
   <div class="wrap">
 
     <div class="eyebrow">PRIVATE CONNECTION</div>
-
     <h2 class="serif">Connect With Me.</h2>
 
     <p class="lead">
@@ -472,7 +436,7 @@ footer{
         <span>VIBER</span>
       </a>
 
-      <a class="contact-btn snapchat-btn" href="#">
+      <a class="contact-btn" href="#">
         <img class="brand-logo" src="https://cdn.simpleicons.org/snapchat/FFFC00" alt="Snapchat">
         <span>SNAPCHAT</span>
       </a>
@@ -507,7 +471,6 @@ footer{
       </a>
 
     </div>
-
   </div>
 </section>
 
