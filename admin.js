@@ -176,7 +176,7 @@ function injectAdminHTML(){
   </div>
 </div>
 
-<div class="admin-toast" id="adminToast">Saved</div>
+<div class="admin-toast" id="adminToast"></div>
 `;
   document.body.insertAdjacentHTML('beforeend', html);
 }

@@ -18,16 +18,25 @@ http.createServer((req, res) => {
   if (!filePath.startsWith(ROOT) || filePath.includes('.git')) {
     res.writeHead(403); res.end(); return;
   }
+  const ext = path.extname(filePath);
+  const secHeaders = {
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+    'Cache-Control': (ext && ext !== '.html')
+      ? 'public, max-age=31536000, immutable'
+      : 'public, max-age=300'
+  };
   fs.readFile(filePath, (err, data) => {
     if (err) {
       fs.readFile(path.join(ROOT, 'index.html'), (e2, fallback) => {
         if (e2) { res.writeHead(404); res.end('Not found'); return; }
-        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.writeHead(200, Object.assign({ 'Content-Type': 'text/html' }, secHeaders));
         res.end(fallback);
       });
       return;
     }
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(filePath)] || 'application/octet-stream' });
+    res.writeHead(200, Object.assign({ 'Content-Type': MIME[ext] || 'application/octet-stream' }, secHeaders));
     res.end(data);
   });
 }).listen(PORT, '0.0.0.0');

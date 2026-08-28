@@ -441,11 +441,13 @@ body.edit-mode [data-media] .media-edit-btn{display:inline-flex}
   letter-spacing:.18em;
   text-transform:uppercase;
   font-weight:600;
+  opacity:0;
+  visibility:hidden;
   transform:translateY(200%);
-  transition:transform .35s var(--ease);
+  transition:transform .35s var(--ease), opacity .35s var(--ease), visibility .35s var(--ease);
   box-shadow:0 20px 60px rgba(225,29,72,.4);
 }
-.admin-toast.show{transform:translateY(0)}
+.admin-toast.show{transform:translateY(0);opacity:1;visibility:visible}
 
 /* rendered media inside gallery tiles / video frame */
 [data-media] .injected-media{

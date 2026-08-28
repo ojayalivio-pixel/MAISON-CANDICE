@@ -1,0 +1,22 @@
+{
+  "summary": "Frontend verification of the 'SAVED' bottom-left indicator fix, favicon update, and security headers on the public site. All requested acceptance criteria pass: public visitors never see a 'Saved' toast; the admin-toast is hidden (opacity:0; visibility:hidden) by default with empty text; favicon.svg (gold C monogram) serves as image/svg+xml with 200 and nosniff; favicon.png is now 3170 bytes (~3KB, previously 597KB); security headers (X-Content-Type-Options: nosniff, Referrer-Policy, Permissions-Policy, Cache-Control) are present on responses; nav & hero regression intact; backstage login (Ctrl+Shift+K + candice2026) still works and adding the .show class properly renders the 'SAVED' toast at bottom-left (visible in screenshot) which then hides when .show is removed and text emptied.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "admin.js still injects the admin-toast element into the DOM for every public visitor. Current CSS-hidden approach is safe, but a cleaner long-term fix would be to only inject/mount the admin overlay elements when backstage session is active. Not required — current fix works.",
+    "server.js Cache-Control is 'no-store, no-cache, must-revalidate' for HTML (good) but static asset caching should be verified (favicon.png/svg get 'public, max-age=...') to meet the 'fast' goal. Confirmed logic branches on ext !== '.html'."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped)", "frontend": "100%"},
+  "test_credentials": "Backstage: candice2026 via Ctrl+Shift+K (verified working). #backstage hash alone did NOT open the login on this reload — Ctrl+Shift+K did. Minor UX note only, not a regression from this change.",
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Verified via preview URL. Public toast getComputedStyle: opacity=0, visibility=hidden, text=''. No fixed element with text 'Saved' visible on public page (even after scroll). favicon.svg 200 image/svg+xml, favicon.png 3170 bytes. Response headers include nosniff/referrer-policy/permissions-policy. Backstage login via Ctrl+Shift+K + candice2026 opens adminPanel; adding .show class + text 'Saved' to #adminToast correctly renders the SAVED pill at bottom-left (screenshot: /app/.screenshots/toast_visible.png). No regressions detected in nav (ABOUT·EXPERIENCES·GALLERY·TRAVEL·BOOK·PAY·FAQ·CONNECT all present)."
+}
