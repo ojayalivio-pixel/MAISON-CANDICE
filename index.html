@@ -1,514 +1,92 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Candice Ferragamo — a luxury digital experience.">
-<title>CANDICE FERRAGAMO</title>
-<link rel="icon" type="image/png" href="favicon.png">
-<style>
-:root{
-  --bg:#080808;
-  --panel:#101010;
-  --line:#2a2927;
-  --gold:#d5bb83;
-  --text:#f4efe6;
-  --muted:#aaa49a;
-}
-
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
-}
-
-a{text-decoration:none;color:inherit}
-.serif{font-family:Georgia,'Times New Roman',serif}
-
-.wrap{
-  width:min(1180px,92%);
-  margin:auto;
-}
-
-nav{
-  height:76px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  position:fixed;
-  top:0;
-  width:100%;
-  z-index:20;
-  padding:0 4%;
-  background:#080808dd;
-  backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--line);
-}
-
-.brand{
-  letter-spacing:.28em;
-  font-size:12px;
-}
-
-.navlinks{
-  display:flex;
-  gap:20px;
-  font-size:10px;
-  letter-spacing:.13em;
-  color:#c8c2b7;
-}
-
-.navlinks a:hover{color:var(--gold)}
-
-.hero{
-  min-height:100vh;
-  display:flex;
-  align-items:end;
-  padding:150px 0 90px;
-  background:
-    radial-gradient(circle at 78% 22%,#4b412e 0%,transparent 30%),
-    radial-gradient(circle at 20% 75%,#1d1811 0%,transparent 25%),
-    linear-gradient(120deg,#080808,#16130f 60%,#080808);
-}
-
-.eyebrow{
-  color:var(--gold);
-  font-size:11px;
-  letter-spacing:.25em;
-}
-
-.hero h1{
-  max-width:1100px;
-  font-size:clamp(58px,8vw,125px);
-  line-height:.9;
-  font-weight:400;
-  margin:22px 0 28px;
-  letter-spacing:-.035em;
-}
-  .hero h1 span{
-  display:block;
-}
-
-.hero h1 span:last-child{
-  color:var(--gold);
-}
-
-.hero-buttons{
-  margin-top:8px;
-}
-  max-width:1100px;
-  font-size:clamp(58px,8vw,125px);
-  line-height:.9;
-  font-weight:400;
-  margin:22px 0 28px;
-  letter-spacing:-.035em;
-}
-
-.hero p{
-  max-width:620px;
-  color:#c6c0b6;
-  line-height:1.8;
-  font-size:15px;
-}
-
-.btn{
-  display:inline-block;
-  border:1px solid var(--gold);
-  padding:15px 21px;
-  margin:12px 8px 0 0;
-  font-size:10px;
-  letter-spacing:.16em;
-  transition:.25s;
-  cursor:pointer;
-  background:transparent;
-  color:var(--text);
-}
-
-.btn:hover{
-  background:var(--gold);
-  color:#111;
-}
-
-section{
-  padding:105px 0;
-  border-top:1px solid var(--line);
-}
-
-h2{
-  font-size:clamp(38px,6vw,76px);
-  font-weight:400;
-  margin:12px 0 25px;
-}
-
-.lead{
-  max-width:760px;
-  color:var(--muted);
-  line-height:1.9;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:14px;
-  margin-top:38px;
-}
-
-.card{
-  background:var(--panel);
-  border:1px solid var(--line);
-  padding:24px;
-  min-height:185px;
-}
-
-.card h3{
-  font-family:Georgia,serif;
-  font-size:23px;
-  font-weight:400;
-  margin:0 0 13px;
-}
-
-.card p{
-  font-size:13px;
-  color:var(--muted);
-  line-height:1.7;
-}
-
-.media{
-  min-height:330px;
-  background:linear-gradient(145deg,#27231d,#0e0e0e);
-  border:1px solid var(--line);
-  display:flex;
-  align-items:end;
-  padding:18px;
-  color:#c9bfae;
-  font-size:10px;
-  letter-spacing:.14em;
-  overflow:hidden;
-  position:relative;
-}
-
-.media img,
-.media video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  position:absolute;
-  inset:0;
-}
-
-.media-label{
-  position:relative;
-  z-index:2;
-  background:#080808bb;
-  padding:8px 10px;
-}
-
-.two{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:60px;
-}
-
-.location{
-  font-size:clamp(30px,4vw,55px);
-  font-family:Georgia,serif;
-}
-
-/* CONTACTS */
-
-.contact-list{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px;
-  margin-top:32px;
-}
-
-.contact-btn{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  min-height:68px;
-  padding:14px 18px;
-  border:1px solid var(--line);
-  background:var(--panel);
-  font-size:10px;
-  letter-spacing:.14em;
-  transition:.25s;
-}
-
-.contact-btn:hover{
-  border-color:var(--gold);
-  background:#171510;
-  transform:translateY(-2px);
-}
-
-.brand-logo{
-  width:28px;
-  height:28px;
-  flex:0 0 28px;
-  object-fit:contain;
-  display:block;
-}
-
-.logo-wide{
-  width:38px;
-  flex-basis:38px;
-}
-
-/* FOOTER */
-
-footer{
-  padding:60px 0;
-  color:#827d74;
-  font-size:11px;
-  letter-spacing:.08em;
-}
-
-/* MOBILE */
-
-@media(max-width:850px){
-  .navlinks{display:none}
-  .grid{grid-template-columns:1fr}
-  .two{grid-template-columns:1fr;gap:25px}
-  .contact-list{grid-template-columns:1fr}
-  section{padding:75px 0}
-}
-</style>
-</head>
-
-<body>
-
-<nav>
-  <a class="brand serif" href="#home">CANDICE FERRAGAMO</a>
-
-  <div class="navlinks">
-    <a href="#candice">CANDICE</a>
-    <a href="#experiences">EXPERIENCES</a>
-    <a href="#gallery">GALLERY</a>
-    <a href="#videos">VIDEOS</a>
-    <a href="#travel">TRAVEL</a>
-    <a href="#contact">CONTACT</a>
-  </div>
-</nav>
-
-<main>
-
-<section class="hero" id="home">
-  <div class="wrap">
-
-    <div class="eyebrow">
-      EXCLUSIVE · ELEGANT · INTERNATIONAL
-    </div>
-
-    <h1 class="serif">
-      <span>COME EXPLORE</span>
-      <span>MY WORLD,</span>
-      <span>CANDICE FERRAGAMO.</span>
-    </h1>
-
-    <p>
-      A private world of desire, personal connection,
-      and unforgettable experiences.
-    </p>
-
-    <div class="hero-buttons">
-      <a class="btn" href="#candice">DISCOVER CANDICE</a>
-      <a class="btn" href="#contact">CONNECT WITH ME</a>
-    </div>
-
-  </div>
-</section>
-
-<section id="candice">
-  <div class="wrap two">
-    <div>
-      <div class="eyebrow">CANDICE — WITHOUT BORDERS</div>
-
-      <h2 class="serif">
-        Live. Personal.<br>
-        Without Borders.
-      </h2>
-    </div>
-
-    <div class="lead">
-      Candice is a sophisticated digital persona available to a global
-      audience through live entertainment, personal interaction,
-      exclusive content, fantasy, performance, and virtual experiences.
-      This website is designed to feel private, cinematic,
-      international, and effortless to navigate.
-    </div>
-  </div>
-</section>
-
-<section id="experiences">
-  <div class="wrap">
-
-    <div class="eyebrow">SIGNATURE EXPERIENCES</div>
-    <h2 class="serif">Curated for Candice.</h2>
-
-    <div class="grid">
-      <div class="card">
-        <h3>Live Webcam Shows</h3>
-        <p>Personal live entertainment and interactive digital experiences.</p>
-      </div>
-
-      <div class="card">
-        <h3>Private Shows</h3>
-        <p>Exclusive one-to-one sessions arranged through your preferred platform.</p>
-      </div>
-
-      <div class="card">
-        <h3>Virtual Dates</h3>
-        <p>Personal connection designed for an international audience.</p>
-      </div>
-
-      <div class="card">
-        <h3>Roleplay &amp; Fantasy</h3>
-        <p>Customisable creative experiences, subject to boundaries and platform rules.</p>
-      </div>
-
-      <div class="card">
-        <h3>Voice &amp; ASMR</h3>
-        <p>Personalised audio-focused experiences and fantasy interaction.</p>
-      </div>
-
-      <div class="card">
-        <h3>A Tailored Experience</h3>
-        <p>A flexible experience shaped around your preferences and my boundaries.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="gallery">
-  <div class="wrap">
-
-    <div class="eyebrow">EDITORIAL COLLECTIONS</div>
-    <h2 class="serif">Gallery &amp; Private Media</h2>
-
-    <p class="lead">
-      Featured photography and selected visual collections from my world.
-    </p>
-
-    <div class="grid">
-      <div class="media"><span class="media-label">CANDICE — VIRTUAL</span></div>
-      <div class="media"><span class="media-label">EDITORIAL &amp; PORTRAITS</span></div>
-      <div class="media"><span class="media-label">TRAVEL DIARIES</span></div>
-      <div class="media"><span class="media-label">BEHIND THE SCENES</span></div>
-      <div class="media"><span class="media-label">EXCLUSIVE PREVIEWS</span></div>
-      <div class="media"><span class="media-label">FEATURED MOMENTS</span></div>
-    </div>
-  </div>
-</section>
-
-<section id="videos">
-  <div class="wrap">
-    <div class="eyebrow">NOW PLAYING</div>
-    <h2 class="serif">Featured Video.</h2>
-
-    <div class="media" style="min-height:420px">
-      <span class="media-label">FEATURED VIDEO — CANDICE FERRAGAMO</span>
-    </div>
-  </div>
-</section>
-<section id="travel">
-  <div class="wrap two">
-
-    <div>
-      <div class="eyebrow">CURRENTLY AVAILABLE IN</div>
-
-      <div class="location">
-        UNITED ARAB EMIRATES<br>
-        DUBAI.
-      </div>
-    </div>
-
-    <div>
-      <p class="lead">
-        My current general location and availability are shared at my discretion.
-        For privacy and security, I never publicly display exact GPS coordinates,
-        hotel details, residence information, or an exact address.
-      </p>
-
-      <a href="#contact" class="contact-me-link">CONNECT WITH ME</a>
-    </div>
-
-  </div>
-</section>
-
-
-<section id="contact">
-  <div class="wrap">
-
-    <div class="eyebrow">PRIVATE CONNECTION</div>
-
-    <h2 class="serif">Connect With Me.</h2>
-
-    <p class="lead">
-      For private enquiries and personal connections, you may reach me
-      through my preferred contact methods below.
-    </p>
-
-    <div class="contact-list">
-
-      <a class="contact-btn" href="mailto:your@email.com">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/gmail/EA4335" alt="Email">
-        <span>EMAIL ME</span>
-      </a>
-
-      <a class="contact-btn" href="#">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/whatsapp/25D366" alt="WhatsApp">
-        <span>WHATSAPP</span>
-      </a>
-
-      <a class="contact-btn" href="#">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/viber/7360F2" alt="Viber">
-        <span>VIBER</span>
-      </a>
-
-      <a class="contact-btn" href="#">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/snapchat/FFFC00" alt="Snapchat">
-        <span>SNAPCHAT</span>
-      </a>
-
-      <a class="contact-btn" href="#">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/wechat/07C160" alt="WeChat">
-        <span>WECHAT</span>
-      </a>
-
-      <a class="contact-btn" href="#">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/microsoftteams/6264A7" alt="Microsoft Teams">
-        <span>MICROSOFT TEAMS</span>
-      </a>
-
-      <a class="contact-btn" href="#">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/bluesky/1185FE" alt="Bluesky">
-        <span>BLUESKY</span>
-      </a>
-
-      <a class="contact-btn" href="#">
-        <span>LIVEJASMIN</span>
-      </a>
-
-      <a class="contact-btn" href="#">
-        <span>CHATURBATE</span>
-      </a>
-
-    </div>
-  </div>
-</section>
-
-</main>
-
-<footer>
-  <div class="wrap">
-    CANDICE FERRAGAMO · © 2026
-  </div>
-</footer>
-
-</body>
-</html>
+PUTACANDICE FERRAGAMO
+EXCLUSIVE · ELEGANT · INTERNATIONAL
+COME EXPLORE
+MY WORLD,
+CANDICE FERRAGAMO.
+A private world of desire, personal connection, and unforgettable experiences.
+DISCOVER CANDICE CONNECT WITH ME
+CANDICE — WITHOUT BORDERS
+Live. Personal. Without Borders.
+Candice is a sophisticated digital persona available to a global audience through live entertainment, personal interaction, exclusive content, fantasy, performance, and virtual experiences. This website is designed to feel private, cinematic, international, and effortless to navigate.
+SIGNATURE EXPERIENCES
+Curated for Candice.
+Live Webcam Shows
+Personal live entertainment and interactive digital experiences.
+Private Shows
+Exclusive one-to-one sessions arranged through your preferred platform.
+Virtual Dates
+Personal connection designed for an international audience.
+Roleplay & Fantasy
+Customisable creative experiences, subject to boundaries and platform rules.
+Voice & ASMR
+Personalised audio-focused experiences and fantasy interaction.
+A Tailored Experience
+A flexible experience shaped around your preferences and my boundaries.
+EDITORIAL COLLECTIONS
+Gallery & Private Media
+Featured photography and selected visual collections from my world.
+CANDICE — VIRTUAL
+EDITORIAL & PORTRAITS
+TRAVEL DIARIES
+BEHIND THE SCENES
+EXCLUSIVE PREVIEWS
+FEATURED MOMENTS
+NOW PLAYING
+Featured Video.
+FEATURED VIDEO — CANDICE FERRAGAMO
+CURRENTLY AVAILABLE IN
+UNITED ARAB EMIRATES
+DUBAI.
+My current general location and availability are shared at my discretion. For privacy and security, I never publicly display exact GPS coordinates, hotel details, residence information, or an exact address.
+CONNECT WITH ME ✉️
+PRIVATE CONNECTION
+Connect With Me.
+For private enquiries and personal connections, you may reach me through my preferred contact methods below.
+￼
+EMAIL ME
+￼
+WHATSAPP
+￼
+VIBER
+￼
+SNAPCHAT
+￼
+WECHAT
+￼
+MICROSOFT TEAMS
+￼
+BLUESKY
+￼
+LIVEJASMIN
+￼
+CHATURBATE
+THOUGHTFUL GESTURES
+Gift & Support.
+Thank you for your kindness and support. If you would like to send a gift or support my work, you can use one of the secure options below. Availability may vary by country and platform.
+“A thoughtful gesture is never expected, but always deeply appreciated. Thank you for thinking of me. ♡”
+💳
+Card Payment
+Pay securely through my external payment provider.
+PAY SECURELY
+↗
+Wise
+International transfer through my secure Wise payment link.
+SEND A GIFT
+◉
+PayPal
+Send a gift through my PayPal payment link.
+SEND A GIFT
+✦
+Paxum
+Use my verified Paxum details when available.
+VIEW DETAILS
+₿
+Cryptocurrency
+Selected digital currencies may be accepted where supported.
+VIEW DETAILS
+♡
+Other Options
+Contact me for currently available payment options.
+CONTACT ME
+Use only the payment links and details published on this official website. Never send card numbers, passwords, or security codes by message.
+CANDICE FERRAGAMO · © 2026
