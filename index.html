@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="Candice Ferragamo — a private luxury digital experience.">
+<meta name="theme-color" content="#080808">
 <title>CANDICE FERRAGAMO</title>
 <link rel="icon" type="image/png" href="favicon.png">
 
@@ -11,12 +12,14 @@
 :root{
   --bg:#080808;
   --panel:#101010;
-  --panel-2:#14120f;
+  --panel-2:#15110f;
   --line:#2a2927;
   --gold:#d5bb83;
   --red:#d71920;
+  --red-deep:#8d1015;
   --text:#f4efe6;
   --muted:#aaa49a;
+  --soft:#c9c1b5;
 }
 
 *{box-sizing:border-box}
@@ -27,14 +30,26 @@ html{
 
 body{
   margin:0;
-  background:var(--bg);
+  background:
+    radial-gradient(circle at 80% 0%,rgba(215,25,32,.08),transparent 25%),
+    var(--bg);
   color:var(--text);
   font-family:Arial,Helvetica,sans-serif;
+}
+
+body::selection{
+  background:var(--red);
+  color:#fff;
 }
 
 a{
   color:inherit;
   text-decoration:none;
+}
+
+button,
+a{
+  -webkit-tap-highlight-color:transparent;
 }
 
 .serif{
@@ -48,31 +63,32 @@ a{
 
 /* NAVIGATION */
 
-nav{
+nav.main-nav{
   position:fixed;
   top:0;
   left:0;
   width:100%;
   height:76px;
-  z-index:50;
+  z-index:80;
   display:flex;
   align-items:center;
   justify-content:space-between;
   padding:0 4%;
-  background:rgba(8,8,8,.92);
-  backdrop-filter:blur(16px);
+  background:rgba(8,8,8,.93);
+  backdrop-filter:blur(18px);
   border-bottom:1px solid var(--line);
 }
 
 .brand{
   font-size:12px;
   letter-spacing:.28em;
+  white-space:nowrap;
 }
 
 .navlinks{
   display:flex;
-  gap:22px;
   align-items:center;
+  gap:21px;
   font-size:10px;
   letter-spacing:.14em;
   color:#c8c2b7;
@@ -86,6 +102,56 @@ nav{
   color:var(--gold);
 }
 
+/* DESKTOP CONTENTS RAIL */
+
+.contents-rail{
+  position:fixed;
+  right:20px;
+  top:50%;
+  transform:translateY(-50%);
+  width:196px;
+  z-index:70;
+  padding:18px 16px;
+  background:rgba(12,12,12,.90);
+  border:1px solid var(--line);
+  backdrop-filter:blur(18px);
+  box-shadow:0 18px 55px rgba(0,0,0,.38);
+}
+
+.contents-title{
+  margin-bottom:12px;
+  color:var(--gold);
+  font-size:9px;
+  letter-spacing:.23em;
+}
+
+.contents-list{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+
+.contents-list a{
+  display:flex;
+  gap:8px;
+  padding:7px 0;
+  color:#bdb7ad;
+  font-size:8px;
+  letter-spacing:.12em;
+  border-bottom:1px solid transparent;
+  transition:.2s;
+}
+
+.contents-list a span{
+  color:#6f6a63;
+  min-width:18px;
+}
+
+.contents-list a:hover{
+  color:#fff;
+  border-bottom-color:var(--gold);
+}
+
 /* HERO */
 
 .hero{
@@ -94,6 +160,7 @@ nav{
   align-items:flex-end;
   padding:160px 0 92px;
   background:
+    linear-gradient(rgba(8,8,8,.18),rgba(8,8,8,.18)),
     radial-gradient(circle at 78% 20%,rgba(75,65,46,.72) 0%,transparent 30%),
     radial-gradient(circle at 18% 76%,rgba(29,24,17,.9) 0%,transparent 28%),
     linear-gradient(120deg,#080808,#16130f 60%,#080808);
@@ -106,12 +173,12 @@ nav{
 }
 
 .hero h1{
-  max-width:980px;
+  max-width:990px;
   margin:22px 0 28px;
-  font-size:clamp(52px,7vw,105px);
+  font-size:clamp(50px,7vw,104px);
   line-height:.91;
   font-weight:400;
-  letter-spacing:-.025em;
+  letter-spacing:-.026em;
 }
 
 .hero h1 span{
@@ -181,7 +248,7 @@ h2{
   gap:60px;
 }
 
-/* EXPERIENCES */
+/* EXPERIENCE CARDS */
 
 .grid{
   display:grid;
@@ -193,7 +260,7 @@ h2{
 .card{
   min-height:185px;
   padding:24px;
-  background:var(--panel);
+  background:linear-gradient(145deg,var(--panel),#0c0c0c);
   border:1px solid var(--line);
   transition:.25s;
 }
@@ -256,6 +323,27 @@ h2{
   line-height:1.05;
 }
 
+.availability{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top:18px;
+  padding:8px 11px;
+  border:1px solid #4f2729;
+  background:#140b0c;
+  color:#dcb9b9;
+  font-size:9px;
+  letter-spacing:.14em;
+}
+
+.availability-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#d71920;
+  box-shadow:0 0 10px rgba(215,25,32,.75);
+}
+
 /* CONNECT CTA */
 
 .connect-with-me{
@@ -285,15 +373,15 @@ h2{
 }
 
 .contact-btn{
-  min-height:68px;
+  min-height:70px;
   display:flex;
   align-items:center;
   gap:14px;
-  padding:14px 18px;
+  padding:14px 17px;
   background:var(--panel);
   border:1px solid var(--line);
   font-size:10px;
-  letter-spacing:.13em;
+  letter-spacing:.12em;
   transition:.25s;
 }
 
@@ -304,14 +392,25 @@ h2{
 }
 
 .contact-btn.messaging{
-  border-color:#6e1e23;
-  background:linear-gradient(135deg,#170d0e,#100b0b);
+  border-color:#6b1f25;
+  background:linear-gradient(135deg,#190d0f,#100a0b);
   box-shadow:inset 3px 0 0 var(--red);
 }
 
 .contact-btn.messaging:hover{
   border-color:var(--red);
-  background:#1d0d0f;
+  background:#210d0f;
+}
+
+.contact-btn.unavailable{
+  opacity:.58;
+  cursor:not-allowed;
+}
+
+.contact-btn.unavailable:hover{
+  border-color:var(--line);
+  background:var(--panel);
+  transform:none;
 }
 
 .brand-logo{
@@ -323,24 +422,44 @@ h2{
 }
 
 .logo-wide{
-  width:70px;
+  width:74px;
   height:32px;
-  flex:0 0 70px;
+  flex:0 0 74px;
 }
 
 .contact-status{
   margin-left:auto;
-  color:#777168;
+  color:#8a837a;
   font-size:8px;
   letter-spacing:.08em;
   text-align:right;
 }
 
-.contact-status.unavailable{
-  color:#a6a09a;
+.contact-status.available{
+  color:#d6b4b4;
 }
 
-/* PAYMENTS */
+.contact-status.unavailable{
+  color:#777168;
+}
+
+/* PAYMENT / GIFTING */
+
+.gift-intro{
+  max-width:790px;
+}
+
+.gift-quote{
+  max-width:780px;
+  margin:28px 0 0;
+  padding:21px 23px;
+  border-left:2px solid var(--red);
+  background:linear-gradient(90deg,#120a0b,transparent);
+  color:var(--soft);
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:21px;
+  line-height:1.6;
+}
 
 .payment-grid{
   display:grid;
@@ -350,9 +469,9 @@ h2{
 }
 
 .payment-card{
-  min-height:235px;
+  min-height:245px;
   padding:28px 24px;
-  background:var(--panel);
+  background:linear-gradient(145deg,var(--panel),#0c0c0c);
   border:1px solid var(--line);
   transition:.25s;
 }
@@ -365,7 +484,7 @@ h2{
 .payment-icon{
   margin-bottom:18px;
   color:var(--gold);
-  font-size:26px;
+  font-size:25px;
 }
 
 .payment-card h3{
@@ -381,9 +500,16 @@ h2{
   line-height:1.7;
 }
 
+.payment-detail{
+  margin-top:12px;
+  color:#c9c1b5;
+  font-size:11px;
+  word-break:break-word;
+}
+
 .payment-btn{
   display:inline-block;
-  margin-top:12px;
+  margin-top:15px;
   padding:11px 14px;
   border:1px solid var(--gold);
   color:var(--gold);
@@ -398,19 +524,49 @@ h2{
 }
 
 .payment-btn.unavailable{
-  opacity:.58;
-  cursor:default;
+  opacity:.55;
+  cursor:not-allowed;
 }
 
-.gift-quote{
-  max-width:760px;
-  margin:28px 0 0;
-  padding:20px 22px;
-  border-left:2px solid var(--gold);
-  color:#c9c1b5;
-  font-family:Georgia,"Times New Roman",serif;
+/* FAQ */
+
+.faq-list{
+  max-width:850px;
+  margin-top:34px;
+}
+
+.faq-item{
+  border-top:1px solid var(--line);
+  padding:20px 0;
+}
+
+.faq-item:last-child{
+  border-bottom:1px solid var(--line);
+}
+
+.faq-item h3{
+  margin:0 0 9px;
+  font-family:Georgia,serif;
+  font-weight:400;
   font-size:21px;
-  line-height:1.6;
+}
+
+.faq-item p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.8;
+  font-size:13px;
+}
+
+/* NOTE / PRIVACY */
+
+.private-note{
+  padding:24px;
+  background:var(--panel-2);
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.8;
 }
 
 /* FOOTER */
@@ -422,27 +578,62 @@ footer{
   letter-spacing:.08em;
 }
 
-/* MOBILE */
+/* RESPONSIVE */
+
+@media(max-width:1200px){
+  .contents-rail{
+    display:none;
+  }
+}
 
 @media(max-width:850px){
-  .navlinks{display:none}
-  section{padding:75px 0}
+  nav.main-nav{
+    height:68px;
+  }
+
+  .brand{
+    font-size:10px;
+    letter-spacing:.22em;
+  }
+
+  .navlinks{
+    display:none;
+  }
+
+  .hero{
+    padding:135px 0 75px;
+  }
+
+  .hero h1{
+    font-size:clamp(44px,12vw,76px);
+  }
+
+  section{
+    padding:75px 0;
+  }
+
   .two,
   .grid,
   .contact-list,
   .payment-grid{
     grid-template-columns:1fr;
   }
-  .hero h1{
-    font-size:clamp(46px,12vw,76px);
+
+  .payment-card{
+    min-height:auto;
+  }
+
+  .gift-quote{
+    font-size:18px;
   }
 }
-</style>
+  </style>
 </head>
 
 <body>
 
-<nav>
+<!-- MAIN NAVIGATION -->
+<nav class="main-nav">
   <a class="brand serif" href="#home">CANDICE FERRAGAMO</a>
 
   <div class="navlinks">
@@ -453,15 +644,37 @@ footer{
     <a href="#travel">TRAVEL</a>
     <a href="#contact">CONTACT</a>
     <a href="#payments">GIFTS</a>
+    <a href="#faq">FAQ</a>
   </div>
 </nav>
 
+<!-- DESKTOP CONTENTS -->
+<aside class="contents-rail" aria-label="Website contents">
+  <div class="contents-title">ENTER MY WORLD</div>
+
+  <div class="contents-list">
+    <a href="#home"><span>01</span>WELCOME</a>
+    <a href="#candice"><span>02</span>CANDICE</a>
+    <a href="#experiences"><span>03</span>EXPERIENCES</a>
+    <a href="#gallery"><span>04</span>GALLERY</a>
+    <a href="#videos"><span>05</span>VIDEOS</a>
+    <a href="#travel"><span>06</span>TRAVEL</a>
+    <a href="#contact"><span>07</span>CONTACT</a>
+    <a href="#payments"><span>08</span>GIFTS &amp; SUPPORT</a>
+    <a href="#faq"><span>09</span>FAQ</a>
+    <a href="#privacy"><span>10</span>PRIVACY</a>
+  </div>
+</aside>
+
 <main>
 
+<!-- HERO -->
 <section class="hero" id="home">
   <div class="wrap">
 
-    <div class="eyebrow">EXCLUSIVE · ELEGANT · INTERNATIONAL</div>
+    <div class="eyebrow">
+      EXCLUSIVE · ELEGANT · INTERNATIONAL
+    </div>
 
     <h1 class="serif">
       <span>COME EXPLORE</span>
@@ -482,200 +695,388 @@ footer{
   </div>
 </section>
 
+<!-- CANDICE -->
 <section id="candice">
   <div class="wrap two">
+
     <div>
       <div class="eyebrow">CANDICE — WITHOUT BORDERS</div>
-      <h2 class="serif">Live. Personal.<br>Without Borders.</h2>
+
+      <h2 class="serif">
+        Live. Personal.<br>
+        Without Borders.
+      </h2>
     </div>
 
     <div class="lead">
-      Candice is a sophisticated digital persona available to a global
-      audience through live entertainment, personal interaction,
-      exclusive content, performance, and virtual experiences.
-      This website is designed to feel private, cinematic,
-      international, and effortless to navigate.
+      Candice is a sophisticated digital persona with a playful,
+      confident, feminine and unmistakably mischievous personality.
+      She can be warm and genuinely sweet, but she also has a
+      bold, unapologetic side that keeps things interesting.
+
+      <br><br>
+
+      Beautiful, sexy, witty and a little maldita when the moment
+      calls for it, Candice values good energy, confidence,
+      discretion, respect and memorable connections.
     </div>
+
   </div>
 </section>
 
+<!-- EXPERIENCES -->
 <section id="experiences">
   <div class="wrap">
+
     <div class="eyebrow">SIGNATURE EXPERIENCES</div>
+
     <h2 class="serif">Curated for Candice.</h2>
 
     <div class="grid">
+
       <div class="card">
         <h3>Live Webcam Shows</h3>
-        <p>Personal live entertainment and interactive digital experiences.</p>
+        <p>
+          Personal live entertainment and interactive digital experiences.
+        </p>
       </div>
 
       <div class="card">
         <h3>Private Shows</h3>
-        <p>Exclusive one-to-one sessions arranged through your preferred platform.</p>
+        <p>
+          Exclusive one-to-one sessions arranged through your preferred platform.
+        </p>
       </div>
 
       <div class="card">
         <h3>Virtual Dates</h3>
-        <p>Personal connection designed for an international audience.</p>
+        <p>
+          Personal connection designed for an international audience.
+        </p>
       </div>
 
       <div class="card">
         <h3>Roleplay &amp; Fantasy</h3>
-        <p>Customisable creative experiences, subject to boundaries and platform rules.</p>
+        <p>
+          Creative experiences shaped around boundaries and mutual respect.
+        </p>
       </div>
 
       <div class="card">
         <h3>Voice &amp; ASMR</h3>
-        <p>Personalised audio-focused experiences and fantasy interaction.</p>
+        <p>
+          Personalised audio-focused experiences and intimate conversation.
+        </p>
       </div>
 
       <div class="card">
         <h3>A Tailored Experience</h3>
-        <p>A flexible experience shaped around your preferences and my boundaries.</p>
+        <p>
+          A flexible experience shaped around your preferences and Candice's boundaries.
+        </p>
       </div>
+
     </div>
   </div>
 </section>
 
+<!-- GALLERY -->
 <section id="gallery">
   <div class="wrap">
+
     <div class="eyebrow">EDITORIAL COLLECTIONS</div>
-    <h2 class="serif">Gallery &amp; Private Media</h2>
+
+    <h2 class="serif">
+      Gallery &amp; Private Media
+    </h2>
 
     <p class="lead">
-      Featured photography and selected visual collections from my world.
+      A curated collection of photography and visual stories from my world.
+      Replace these placeholders with your own media whenever you're ready.
     </p>
 
     <div class="grid">
-      <div class="media"><span class="media-label">CANDICE — VIRTUAL</span></div>
-      <div class="media"><span class="media-label">EDITORIAL &amp; PORTRAITS</span></div>
-      <div class="media"><span class="media-label">TRAVEL DIARIES</span></div>
-      <div class="media"><span class="media-label">BEHIND THE SCENES</span></div>
-      <div class="media"><span class="media-label">EXCLUSIVE PREVIEWS</span></div>
-      <div class="media"><span class="media-label">FEATURED MOMENTS</span></div>
+
+      <div class="media">
+        <span class="media-label">CANDICE — VIRTUAL</span>
+      </div>
+
+      <div class="media">
+        <span class="media-label">EDITORIAL &amp; PORTRAITS</span>
+      </div>
+
+      <div class="media">
+        <span class="media-label">TRAVEL DIARIES</span>
+      </div>
+
+      <div class="media">
+        <span class="media-label">BEHIND THE SCENES</span>
+      </div>
+
+      <div class="media">
+        <span class="media-label">EXCLUSIVE PREVIEWS</span>
+      </div>
+
+      <div class="media">
+        <span class="media-label">FEATURED MOMENTS</span>
+      </div>
+
     </div>
   </div>
 </section>
 
+<!-- VIDEOS -->
 <section id="videos">
   <div class="wrap">
+
     <div class="eyebrow">NOW PLAYING</div>
-    <h2 class="serif">Featured Video.</h2>
+
+    <h2 class="serif">
+      Featured Video.
+    </h2>
 
     <div class="media" style="min-height:420px">
-      <span class="media-label">FEATURED VIDEO — CANDICE FERRAGAMO</span>
+      <span class="media-label">
+        FEATURED VIDEO — CANDICE FERRAGAMO
+      </span>
     </div>
+
   </div>
 </section>
 
+<!-- TRAVEL -->
 <section id="travel">
   <div class="wrap two">
 
     <div>
       <div class="eyebrow">CURRENTLY AVAILABLE IN</div>
+
       <div class="location">
         UNITED ARAB EMIRATES<br>
         DUBAI.
       </div>
+
+      <div class="availability">
+        <span class="availability-dot"></span>
+        AVAILABLE 24/7
+      </div>
     </div>
 
     <div>
+
       <p class="lead">
         My current general location and availability are shared at my discretion.
         For privacy and security, I never publicly display exact GPS coordinates,
         hotel details, residence information, or an exact address.
       </p>
 
-      <a class="connect-with-me" href="#contact">💌 CONNECT WITH ME</a>
+      <p class="lead">
+        Upcoming travel:
+        <strong style="color:#d9d2c8;">
+          Philippines 4–13 · Singapore 13–23 · Hong Kong 24–30
+        </strong>
+      </p>
+
+      <a class="connect-with-me" href="#contact">
+        💌 CONNECT WITH ME
+      </a>
+
     </div>
 
   </div>
 </section>
 
+<!-- CONTACT -->
 <section id="contact">
   <div class="wrap">
 
     <div class="eyebrow">PRIVATE CONNECTION</div>
-    <h2 class="serif">Connect With Me.</h2>
+
+    <h2 class="serif">
+      Connect With Me.
+    </h2>
 
     <p class="lead">
-      Choose your preferred channel below. Any option without a configured
-      destination is clearly marked unavailable until the link is added.
+      Choose your preferred channel below. Available contacts are clickable;
+      channels without a destination are clearly marked unavailable.
     </p>
 
     <div class="contact-list">
 
-      <a class="contact-btn" href="mailto:YOUR_EMAIL">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/gmail/EA4335" alt="Email">
+      <!-- EMAIL -->
+      <a class="contact-btn" href="mailto:private@maisoncandice.com">
+        <img
+          class="brand-logo"
+          src="https://cdn.simpleicons.org/gmail/EA4335"
+          alt="Email"
+        >
         <span>EMAIL ME</span>
+        <span class="contact-status available">AVAILABLE</span>
       </a>
 
-      <a class="contact-btn messaging" href="#">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/whatsapp/25D366" alt="WhatsApp">
+      <!-- WHATSAPP -->
+      <a
+        class="contact-btn messaging"
+        href="https://wa.me/message/46V4TW2E5ASNF1"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img
+          class="brand-logo"
+          src="https://cdn.simpleicons.org/whatsapp/25D366"
+          alt="WhatsApp"
+        >
         <span>WHATSAPP</span>
-        <span class="contact-status unavailable">UNAVAILABLE</span>
+        <span class="contact-status available">AVAILABLE</span>
       </a>
 
-      <a class="contact-btn messaging" href="#">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/viber/7360F2" alt="Viber">
+      <!-- VIBER -->
+      <a
+        class="contact-btn messaging"
+        href="viber://chat?number=%2B971501256913"
+      >
+        <img
+          class="brand-logo"
+          src="https://cdn.simpleicons.org/viber/7360F2"
+          alt="Viber"
+        >
         <span>VIBER</span>
-        <span class="contact-status unavailable">UNAVAILABLE</span>
+        <span class="contact-status available">AVAILABLE</span>
       </a>
 
-      <a class="contact-btn messaging" href="#">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/snapchat/FFFC00" alt="Snapchat">
+      <!-- SNAPCHAT -->
+      <a
+        class="contact-btn messaging"
+        href="https://snapchat.com/t/OkSSAxsc"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img
+          class="brand-logo"
+          src="https://cdn.simpleicons.org/snapchat/FFFC00"
+          alt="Snapchat"
+        >
         <span>SNAPCHAT</span>
-        <span class="contact-status unavailable">UNAVAILABLE</span>
+        <span class="contact-status available">AVAILABLE</span>
       </a>
 
-      <a class="contact-btn messaging" href="#">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/wechat/07C160" alt="WeChat">
+      <!-- WECHAT -->
+      <a
+        class="contact-btn messaging unavailable"
+        href="#"
+        onclick="return false;"
+        aria-disabled="true"
+      >
+        <img
+          class="brand-logo"
+          src="https://cdn.simpleicons.org/wechat/07C160"
+          alt="WeChat"
+        >
         <span>WECHAT</span>
-        <span class="contact-status unavailable">UNAVAILABLE</span>
+        <span class="contact-status unavailable">
+          UNAVAILABLE
+        </span>
       </a>
 
-      <a class="contact-btn messaging" href="#">
-        <img class="brand-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Microsoft_Office_Teams_%282025%E2%80%93present%29.svg/960px-Microsoft_Office_Teams_%282025%E2%80%93present%29.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail" alt="Microsoft Teams">
+      <!-- MICROSOFT TEAMS -->
+      <a
+        class="contact-btn messaging unavailable"
+        href="#"
+        onclick="return false;"
+        aria-disabled="true"
+      >
+        <img
+          class="brand-logo"
+          src="https://cdn.simpleicons.org/microsoftteams/6264A7"
+          alt="Microsoft Teams"
+        >
         <span>MICROSOFT TEAMS</span>
-        <span class="contact-status unavailable">UNAVAILABLE</span>
+        <span class="contact-status unavailable">
+          UNAVAILABLE
+        </span>
       </a>
 
-      <a class="contact-btn" href="#">
-        <img class="brand-logo" src="https://cdn.simpleicons.org/bluesky/1185FE" alt="Bluesky">
+      <!-- BLUESKY -->
+      <a
+        class="contact-btn"
+        href="https://bsky.app/profile/candysmrx.bsky.social"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img
+          class="brand-logo"
+          src="https://cdn.simpleicons.org/bluesky/1185FE"
+          alt="Bluesky"
+        >
         <span>BLUESKY</span>
-        <span class="contact-status unavailable">UNAVAILABLE</span>
+        <span class="contact-status available">AVAILABLE</span>
       </a>
 
-      <a class="contact-btn" href="#">
-        <img class="brand-logo logo-wide"
-             src="https://upload.wikimedia.org/wikipedia/commons/f/fd/LiveJasmin_logo.svg"
-             alt="LiveJasmin">
+      <!-- LIVEJASMIN -->
+      <a
+        class="contact-btn"
+        href="https://www.livejasmin.com/candiceferragamo"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img
+          class="brand-logo logo-wide"
+          src="https://upload.wikimedia.org/wikipedia/commons/f/fd/LiveJasmin_logo.svg"
+          alt="LiveJasmin"
+        >
         <span>LIVEJASMIN</span>
-        <span class="contact-status unavailable">UNAVAILABLE</span>
+        <span class="contact-status available">AVAILABLE</span>
       </a>
 
-      <a class="contact-btn" href="#">
-        <img class="brand-logo logo-small"
-             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcyc5jVwJaS4sVN7BLY7_0_0UlFwd3E4K2koIs3yPgtA&s=10"
-             alt="Chaturbate">
+      <!-- CHATURBATE -->
+      <a
+        class="contact-btn"
+        href="https://www.chaturbate.com/forbidden_candice"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img
+          class="brand-logo logo-wide"
+          src="https://commons.wikimedia.org/wiki/Special:FilePath/Chaturbate.png"
+          alt="Chaturbate"
+        >
         <span>CHATURBATE</span>
-        <span class="contact-status unavailable">UNAVAILABLE</span>
+        <span class="contact-status available">AVAILABLE</span>
+      </a>
+
+      <!-- TELEGRAM -->
+      <a
+        class="contact-btn messaging unavailable"
+        href="#"
+        onclick="return false;"
+        aria-disabled="true"
+      >
+        <img
+          class="brand-logo"
+          src="https://cdn.simpleicons.org/telegram/26A5E4"
+          alt="Telegram"
+        >
+        <span>TELEGRAM</span>
+        <span class="contact-status unavailable">
+          UNAVAILABLE
+        </span>
       </a>
 
     </div>
   </div>
 </section>
-
+<!-- GIFTS / SUPPORT -->
 <section id="payments">
   <div class="wrap">
 
     <div class="eyebrow">GIFTS &amp; SUPPORT</div>
-    <h2 class="serif">Gift Options.</h2>
 
-    <p class="lead">
-      Thoughtful gifts and support are always appreciated. Use only the
-      verified payment details or links published here.
+    <h2 class="serif">A Little Something.</h2>
+
+    <p class="lead gift-intro">
+      For those who wish to send a thoughtful gesture, my preferred payment
+      options are listed below. Every genuine gesture is appreciated and
+      never goes unnoticed. ♡
     </p>
 
     <blockquote class="gift-quote">
@@ -685,61 +1086,228 @@ footer{
 
     <div class="payment-grid">
 
+      <!-- CARD PAYMENT -->
       <div class="payment-card">
         <div class="payment-icon">💳</div>
+
         <h3>Card Payment</h3>
-        <p>Secure card checkout through your designated payment provider.</p>
-        <a class="payment-btn unavailable" href="#" aria-disabled="true" onclick="return false;">
+
+        <p>
+          Secure card checkout can be connected here when your payment
+          provider link is ready.
+        </p>
+
+        <a
+          class="payment-btn unavailable"
+          href="#"
+          onclick="return false;"
+          aria-disabled="true"
+        >
           UNAVAILABLE
         </a>
       </div>
 
+      <!-- WISE -->
       <div class="payment-card">
         <div class="payment-icon">W</div>
+
         <h3>Wise</h3>
-        <p>International transfer option for gifts and personal support.</p>
-        <a class="payment-btn unavailable" href="#" aria-disabled="true" onclick="return false;">
-          UNAVAILABLE
+
+        <p>
+          International gifting and support.
+        </p>
+
+        <div class="payment-detail">
+          wise.com/pay/me/jakejungieja
+        </div>
+
+        <a
+          class="payment-btn"
+          href="https://wise.com/pay/me/jakejungieja"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          SEND A GIFT
         </a>
       </div>
 
+      <!-- PAYPAL -->
       <div class="payment-card">
         <div class="payment-icon">$</div>
+
         <h3>PayPal</h3>
-        <p>Send a gift through your verified PayPal payment link.</p>
-        <a class="payment-btn unavailable" href="#" aria-disabled="true" onclick="return false;">
-          UNAVAILABLE
+
+        <p>
+          Use the PayPal email supplied for gifting enquiries.
+        </p>
+
+        <div class="payment-detail">
+          bettafy.co@gmail.com
+        </div>
+
+        <a
+          class="payment-btn"
+          href="mailto:bettafy.co@gmail.com?subject=Gift%20for%20Candice"
+        >
+          CONTACT FOR PAYPAL
         </a>
       </div>
 
+      <!-- PAXUM -->
       <div class="payment-card">
         <div class="payment-icon">P</div>
+
         <h3>Paxum</h3>
-        <p>Digital payment option for supported transactions.</p>
-        <a class="payment-btn unavailable" href="#" aria-disabled="true" onclick="return false;">
+
+        <p>
+          Digital payment option.
+        </p>
+
+        <a
+          class="payment-btn unavailable"
+          href="#"
+          onclick="return false;"
+          aria-disabled="true"
+        >
           UNAVAILABLE
         </a>
       </div>
 
+      <!-- CRYPTO -->
       <div class="payment-card">
         <div class="payment-icon">₿</div>
+
         <h3>Cryptocurrency</h3>
-        <p>Selected digital currencies may be added where supported.</p>
-        <a class="payment-btn unavailable" href="#" aria-disabled="true" onclick="return false;">
+
+        <p>
+          Selected digital currencies can be added when your wallet details
+          are ready.
+        </p>
+
+        <a
+          class="payment-btn unavailable"
+          href="#"
+          onclick="return false;"
+          aria-disabled="true"
+        >
           UNAVAILABLE
         </a>
       </div>
 
+      <!-- OTHER OPTIONS -->
       <div class="payment-card">
         <div class="payment-icon">✦</div>
+
         <h3>Other Options</h3>
-        <p>Additional verified gifting options can be added here.</p>
-        <a class="payment-btn unavailable" href="#" aria-disabled="true" onclick="return false;">
+
+        <p>
+          Additional verified gifting methods may be added later.
+        </p>
+
+        <a
+          class="payment-btn unavailable"
+          href="#"
+          onclick="return false;"
+          aria-disabled="true"
+        >
           UNAVAILABLE
         </a>
       </div>
 
     </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+
+    <div class="eyebrow">QUESTIONS</div>
+
+    <h2 class="serif">
+      Frequently Asked.
+    </h2>
+
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <h3>How do I get in touch?</h3>
+
+        <p>
+          Choose any available contact method in the Connect With Me section.
+          Contact methods are kept intentionally simple and discreet.
+        </p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Where are you currently available?</h3>
+
+        <p>
+          My current general location and travel schedule are shared manually
+          and may change. Exact addresses and private accommodation details
+          are never published.
+        </p>
+      </div>
+
+      <div class="faq-item">
+        <h3>How does international scheduling work?</h3>
+
+        <p>
+          Please state your preferred date, time and time zone when contacting me.
+          I will confirm the corresponding local time and availability.
+        </p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Which payment methods are available?</h3>
+
+        <p>
+          Available methods are shown in the Gifts &amp; Support section.
+          Unconfigured methods remain marked unavailable until their verified
+          details are added.
+        </p>
+      </div>
+
+      <div class="faq-item">
+        <h3>How important is privacy?</h3>
+
+        <p>
+          Privacy and discretion are central to the site. Exact GPS locations,
+          hotel details, residences and unnecessary personal information are not
+          publicly displayed.
+        </p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Are arrangements subject to confirmation?</h3>
+
+        <p>
+          Yes. All enquiries and arrangements remain subject to availability,
+          confirmation, mutual respect and applicable platform or service rules.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PRIVACY -->
+<section id="privacy">
+  <div class="wrap">
+
+    <div class="eyebrow">DISCRETION</div>
+
+    <h2 class="serif">
+      Private By Design.
+    </h2>
+
+    <div class="private-note">
+      This website is designed to give me full control over the information
+      I choose to publish. Exact GPS coordinates, hotel details, residence
+      information and unnecessary personal data are not displayed publicly.
+      Contact and payment information can be enabled or replaced as needed.
+    </div>
+
   </div>
 </section>
 
