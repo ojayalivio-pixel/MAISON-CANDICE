@@ -1,0 +1,53 @@
+{
+  "summary": "Verified Open Graph / Twitter social preview metadata fix for maisoncandice.com static site. All required OG and Twitter meta tags are present in /app/index.html <head>. The og-image.jpg asset is publicly accessible (HTTP 200, image/jpeg) on the preview host with correct 1200x630 dimensions and ~47KB size. Homepage renders visually with no regression.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verification_details": {
+    "og_tags_present": {
+      "og:type": "website",
+      "og:site_name": "Maison Candice",
+      "og:url": "https://maisoncandice.com/",
+      "og:title": "Candice Ferragamo — Private · By Appointment",
+      "og:description": "present",
+      "og:image": "https://maisoncandice.com/og-image.jpg?v=1",
+      "og:image:secure_url": "https://maisoncandice.com/og-image.jpg?v=1",
+      "og:image:type": "image/jpeg",
+      "og:image:width": "1200",
+      "og:image:height": "630",
+      "og:image:alt": "present",
+      "og:locale": "en_US"
+    },
+    "twitter_tags_present": {
+      "twitter:card": "summary_large_image",
+      "twitter:title": "present",
+      "twitter:description": "present",
+      "twitter:image": "https://maisoncandice.com/og-image.jpg?v=1",
+      "twitter:image:alt": "present"
+    },
+    "og_image_asset": {
+      "url_tested": "https://538840d1-17d3-4608-a351-90758411007c.preview.emergentagent.com/og-image.jpg?v=1",
+      "http_status": 200,
+      "content_type": "image/jpeg",
+      "dimensions": "1200x630",
+      "file_size_bytes": 47948,
+      "under_1mb": true,
+      "public_no_auth": true
+    },
+    "homepage_regression": "No regression — page loads, layout intact, hero title/nav/CTA buttons render correctly (verified via screenshot)."
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "og:url and og:image reference production domain https://maisoncandice.com/ (expected/intentional per request); Facebook debugger scrapes must be run against production domain to force cache refresh — recommend running https://developers.facebook.com/tools/debug/ with the production URL after deploy to prime Messenger cache."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped)", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Static site served by /app/frontend/server.js from /app on port 3000. OG metadata fix complete and verified. If Messenger still shows spinner post-deploy on production, this is a Facebook cache issue — solution is to use FB Sharing Debugger to force re-scrape of maisoncandice.com."
+}
